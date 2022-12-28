@@ -19,7 +19,11 @@ export default function WalletSelect({ chain = "icon" }: WalletProps) {
         {chain === "icon" ? <p>ICON:</p> : <p>BSC:</p>}
       </div>
       <div
-        className={`${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerGreen}`}
+        className={
+          iconWallet === null
+            ? `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerRed}`
+            : `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerGreen}`
+        }
       >
         <input
           type="text"
