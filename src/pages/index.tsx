@@ -1,5 +1,6 @@
 import styles from "./index.module.css";
-import { Hr, WalletSelect } from "../components/miscItems/miscItems";
+import { Hr } from "../components/miscItems/miscItems";
+import  WalletSelect  from "../components/WalletSelect/WalletSelect";
 import { type NextPage } from "next";
 import Head from "next/head";
 // import Link from "next/link";
