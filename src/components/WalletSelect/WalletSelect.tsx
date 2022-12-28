@@ -1,3 +1,4 @@
+import { useState } from "react";
 import IconLoginBtn from "../IconLoginBtn/IconLoginBtn";
 import styles from "./WalletSelect.module.css";
 
@@ -6,9 +7,9 @@ type WalletProps = {
 };
 
 export default function WalletSelect({ chain = "icon" }: WalletProps) {
+  const [iconWallet, setIconWallet] = useState("Select ICON Wallet");
   function handleLogin(wallet: string) {
-    console.log("selected wallet");
-    console.log(wallet);
+    setIconWallet(wallet);
   }
   return (
     <div className={styles.walletSelectMain}>
@@ -21,7 +22,8 @@ export default function WalletSelect({ chain = "icon" }: WalletProps) {
         <input
           type="text"
           name="name"
-          value="value"
+          value={iconWallet}
+          readOnly
           className={styles.walletSelectInput}
         />
       </div>
