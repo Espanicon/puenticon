@@ -6,8 +6,10 @@ type WalletProps = {
   chain?: string;
 };
 
+const initIconWallet: string | null = null;
+
 export default function WalletSelect({ chain = "icon" }: WalletProps) {
-  const [iconWallet, setIconWallet] = useState("Select ICON Wallet");
+  const [iconWallet, setIconWallet] = useState(initIconWallet);
   function handleLogin(wallet: string) {
     setIconWallet(wallet);
   }
@@ -22,7 +24,7 @@ export default function WalletSelect({ chain = "icon" }: WalletProps) {
         <input
           type="text"
           name="name"
-          value={iconWallet}
+          value={iconWallet === null ? "Select ICON Wallet" : iconWallet}
           readOnly
           className={styles.walletSelectInput}
         />
