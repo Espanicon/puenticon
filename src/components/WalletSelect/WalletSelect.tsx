@@ -5,6 +5,7 @@ import styles from "./WalletSelect.module.css";
 
 type WalletProps = {
   chain?: string;
+  handleWalletsChange: any;
 };
 
 const initIconWallet: string[] | null = null;
@@ -18,9 +19,14 @@ function updateArrayOfIconWallets(newAddress: string, array: string[]) {
   }
 }
 
-export default function WalletSelect({ chain = "icon" }: WalletProps) {
+export default function WalletSelect({
+  chain = "icon",
+  handleWalletsChange
+}: WalletProps) {
   const [iconWallet, setIconWallet] = useState(initIconWallet);
   const [bscWallet, setBscWallet] = useState(initBscWallet);
+  const [selectedIconWallet, setSelectedIconWallet] = useState(initIconWallet);
+  const [selectedBscWallet, setSelectedBscWallet] = useState(initBscWallet);
 
   const defaultStr =
     chain === "icon" ? "Select ICON Wallet" : "select BSC Wallet";
@@ -37,6 +43,29 @@ export default function WalletSelect({ chain = "icon" }: WalletProps) {
     setBscWallet(wallet);
   }
 
+  function handleSelectChange(evnt: any, chain: string) {
+    if (chain === "icon") {
+      setSelectedIconWallet(evnt.target.value);
+    } else {
+      setSelectedBscWallet(evnt.target.value);
+    }
+  }
+
+  useEffect(() => {
+    //
+    console.log("selectedIconWallet and selectedBscWallet");
+    console.log(selectedIconWallet);
+    console.log(selectedBscWallet);
+    handleWalletsChange({ icon: selectedIconWallet, bsc: selectedBscWallet });
+  }, [selectedBscWallet, selectedIconWallet]);
+
+  useEffect(() => {
+    //
+    console.log("iconWallet and bscWallet");
+    console.log(iconWallet);
+    console.log(bscWallet);
+  }, [iconWallet, bscWallet]);
+
   return chain === "icon" ? (
     <div className={styles.walletSelectMain}>
       <div className={styles.walletSelectChain}>
@@ -49,7 +78,13 @@ export default function WalletSelect({ chain = "icon" }: WalletProps) {
             : `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerGreen}`
         }
       >
-        <select name="selectList" id="selectList" className={styles.select}>
+        <select
+          name="selectList"
+          id="selectList"
+          className={styles.select}
+          value={defaultStr}
+          onChange={evnt => handleSelectChange(evnt, "icon")}
+        >
           {iconWallet === null ? (
             <option value="null">{defaultStr}</option>
           ) : (
@@ -77,7 +112,13 @@ export default function WalletSelect({ chain = "icon" }: WalletProps) {
             : `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerGreen}`
         }
       >
-        <select name="selectList" id="selectList" className={styles.select}>
+        <select
+          name="selectList"
+          id="selectList"
+          className={styles.select}
+          value={defaultStr}
+          onChange={evnt => handleSelectChange(evnt, "bsc")}
+        >
           {bscWallet === null ? (
             <option value="null">{defaultStr}</option>
           ) : (

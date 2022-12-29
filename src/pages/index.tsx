@@ -1,11 +1,23 @@
+import { useState } from "react";
 import styles from "./index.module.css";
 import { Hr } from "../components/miscItems/miscItems";
-import  WalletSelect  from "../components/WalletSelect/WalletSelect";
-import { type NextPage } from "next";
+import WalletSelect from "../components/WalletSelect/WalletSelect";
 import Head from "next/head";
-// import Link from "next/link";
 
-const Home: NextPage = () => {
+const initWallets: {
+  icon: null | string;
+  bsc: null | string;
+} = {
+  icon: null,
+  bsc: null
+};
+
+function Home() {
+  const [wallets, setWallets] = useState(initWallets);
+  function handleWalletsChange(wallets: typeof initWallets) {
+    /* console.log("wallets changed"); */
+    /* console.log(wallets); */
+  }
   return (
     <>
       <Head>
@@ -19,13 +31,14 @@ const Home: NextPage = () => {
             <span className={styles.yellowrangeSpan}>Puenticon</span>
           </h1>
           <div className={styles.cardColumn}>
-            <div
-              className={styles.card}
-            >
+            <div className={styles.card}>
               <h3 className={styles.cardTitle}>Select wallet:</h3>
-              <WalletSelect />
-              <WalletSelect chain='bsc' />
-              <Hr/>
+              <WalletSelect handleWalletsChange={handleWalletsChange} />
+              <WalletSelect
+                chain="bsc"
+                handleWalletsChange={handleWalletsChange}
+              />
+              <Hr />
               <div className={styles.cardText}>
                 Just the basics - Everything you need to know to set up your
                 database and authentication.
@@ -36,6 +49,6 @@ const Home: NextPage = () => {
       </main>
     </>
   );
-};
+}
 
 export default Home;
