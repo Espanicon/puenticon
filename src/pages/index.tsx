@@ -24,7 +24,7 @@ const Home: NextPage = () => {
             >
               <h3 className={styles.cardTitle}>Select wallet:</h3>
               <WalletSelect />
-              <WalletSelect chain='BSC' />
+              <WalletSelect chain='bsc' />
               <Hr/>
               <div className={styles.cardText}>
                 Just the basics - Everything you need to know to set up your

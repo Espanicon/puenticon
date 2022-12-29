@@ -1,0 +1,13 @@
+.btnContainer {
+  border-radius: 2px;
+  border: 2px solid white;
+  height: 40px;
+  background-color: white;
+}
+.btnContainer > img {
+  height: 100%;
+}
+.btnContainer:hover {
+  transform: translateY(1px);
+  cursor: pointer;
+}

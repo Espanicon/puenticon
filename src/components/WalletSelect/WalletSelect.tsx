@@ -1,5 +1,6 @@
 import { useState } from "react";
 import IconLoginBtn from "../IconLoginBtn/IconLoginBtn";
+import BscLoginBtn from "../BscLoginBtn/BscLoginBtn";
 import styles from "./WalletSelect.module.css";
 
 type WalletProps = {
@@ -7,11 +8,22 @@ type WalletProps = {
 };
 
 const initIconWallet: string | null = null;
+const initBscWallet: string | null = null;
 
 export default function WalletSelect({ chain = "icon" }: WalletProps) {
   const [iconWallet, setIconWallet] = useState(initIconWallet);
+  const [bscWallet, setBscWallet] = useState(initBscWallet);
+
+  const defaultStr =
+    chain === "icon" ? "Select ICON Wallet" : "select BSC Wallet";
+
   function handleLogin(wallet: string) {
-    setIconWallet(wallet);
+    if (chain === "icon") {
+      setIconWallet(wallet);
+    } else if (chain === "bsc") {
+      setBscWallet(wallet);
+    } else {
+    }
   }
   return (
     <div className={styles.walletSelectMain}>
@@ -20,7 +32,11 @@ export default function WalletSelect({ chain = "icon" }: WalletProps) {
       </div>
       <div
         className={
-          iconWallet === null
+          chain === "icon"
+            ? iconWallet === null
+              ? `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerRed}`
+              : `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerGreen}`
+            : bscWallet === null
             ? `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerRed}`
             : `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerGreen}`
         }
@@ -28,12 +44,24 @@ export default function WalletSelect({ chain = "icon" }: WalletProps) {
         <input
           type="text"
           name="name"
-          value={iconWallet === null ? "Select ICON Wallet" : iconWallet}
+          value={
+            chain === "icon"
+              ? iconWallet === null
+                ? defaultStr
+                : iconWallet
+              : bscWallet === null
+              ? defaultStr
+              : bscWallet
+          }
           readOnly
           className={styles.walletSelectInput}
         />
       </div>
-      <IconLoginBtn handleWalletSelect={handleLogin} />
+      {chain === "icon" ? (
+        <IconLoginBtn handleWalletSelect={handleLogin} />
+      ) : (
+        <BscLoginBtn handleWalletSelect={handleLogin} />
+      )}
     </div>
   );
 }
