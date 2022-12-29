@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import IconLoginBtn from "../IconLoginBtn/IconLoginBtn";
 import BscLoginBtn from "../BscLoginBtn/BscLoginBtn";
 import styles from "./WalletSelect.module.css";
@@ -7,8 +7,16 @@ type WalletProps = {
   chain?: string;
 };
 
-const initIconWallet: string | null = null;
-const initBscWallet: string | null = null;
+const initIconWallet: string[] | null = null;
+const initBscWallet: string[] | null = null;
+
+function updateArrayOfIconWallets(newAddress: string, array: string[]) {
+  if (array.includes(newAddress)) {
+    return [...array];
+  } else {
+    return [...array, newAddress];
+  }
+}
 
 export default function WalletSelect({ chain = "icon" }: WalletProps) {
   const [iconWallet, setIconWallet] = useState(initIconWallet);
@@ -17,51 +25,73 @@ export default function WalletSelect({ chain = "icon" }: WalletProps) {
   const defaultStr =
     chain === "icon" ? "Select ICON Wallet" : "select BSC Wallet";
 
-  function handleLogin(wallet: string) {
-    if (chain === "icon") {
-      setIconWallet(wallet);
-    } else if (chain === "bsc") {
-      setBscWallet(wallet);
-    } else {
-    }
+  function handleIconLogin(wallet: string) {
+    setIconWallet(state => {
+      const arr = state == null ? [] : state;
+      const newState = updateArrayOfIconWallets(wallet, arr);
+      return newState;
+    });
   }
-  return (
+
+  function handleBscLogin(wallet: string[]) {
+    setBscWallet(wallet);
+  }
+
+  return chain === "icon" ? (
     <div className={styles.walletSelectMain}>
       <div className={styles.walletSelectChain}>
-        {chain === "icon" ? <p>ICON:</p> : <p>BSC:</p>}
+        <p>ICON:</p>
       </div>
       <div
         className={
-          chain === "icon"
-            ? iconWallet === null
-              ? `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerRed}`
-              : `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerGreen}`
-            : bscWallet === null
+          iconWallet === null
             ? `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerRed}`
             : `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerGreen}`
         }
       >
-        <input
-          type="text"
-          name="name"
-          value={
-            chain === "icon"
-              ? iconWallet === null
-                ? defaultStr
-                : iconWallet
-              : bscWallet === null
-              ? defaultStr
-              : bscWallet
-          }
-          readOnly
-          className={styles.walletSelectInput}
-        />
+        <select name="selectList" id="selectList" className={styles.select}>
+          {iconWallet === null ? (
+            <option value="null">{defaultStr}</option>
+          ) : (
+            iconWallet.map((wallet, index) => {
+              return (
+                <option value={`${index}`} key={`${wallet}-${index}`}>
+                  {wallet}
+                </option>
+              );
+            })
+          )}
+        </select>
       </div>
-      {chain === "icon" ? (
-        <IconLoginBtn handleWalletSelect={handleLogin} />
-      ) : (
-        <BscLoginBtn handleWalletSelect={handleLogin} />
-      )}
+      <IconLoginBtn handleWalletSelect={handleIconLogin} />
+    </div>
+  ) : (
+    <div className={styles.walletSelectMain}>
+      <div className={styles.walletSelectChain}>
+        <p>BSC:</p>
+      </div>
+      <div
+        className={
+          bscWallet === null
+            ? `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerRed}`
+            : `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerGreen}`
+        }
+      >
+        <select name="selectList" id="selectList" className={styles.select}>
+          {bscWallet === null ? (
+            <option value="null">{defaultStr}</option>
+          ) : (
+            bscWallet.map((wallet, index) => {
+              return (
+                <option value={`${index}`} key={`${wallet}-${index}`}>
+                  {wallet}
+                </option>
+              );
+            })
+          )}
+        </select>
+      </div>
+      <BscLoginBtn handleWalletSelect={handleBscLogin} />
     </div>
   );
 }
