@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import styles from "./index.module.css";
 import { Hr } from "../components/miscItems/miscItems";
 import WalletSelect from "../components/WalletSelect/WalletSelect";
@@ -12,11 +12,21 @@ const initWallets: {
   bsc: null
 };
 
+const WalletsInit: {
+  icon?: null | string;
+  bsc?: null | string;
+} = {
+  icon: null,
+  bsc: null
+};
 function Home() {
   const [wallets, setWallets] = useState(initWallets);
+  const walletsRef = useRef(WalletsInit);
+
   function handleWalletsChange(wallets: typeof initWallets) {
-    /* console.log("wallets changed"); */
-    /* console.log(wallets); */
+    walletsRef.current = { ...walletsRef.current, ...wallets };
+    console.log("update on parent component");
+    console.log(walletsRef.current);
   }
   return (
     <>

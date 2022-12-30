@@ -21,7 +21,7 @@ export default function BscLoginBtn({ handleWalletSelect }: BscLoginType) {
         const { ethereum } = window;
         await ethereum.request({ method: "eth_requestAccounts" });
         const accounts = await ethereum.request({ method: "eth_accounts" });
-        handleWalletSelect(accounts);
+        handleWalletSelect(accounts[0]);
       } catch (err) {
         console.log("error connecting to metamask wallet");
         console.log(err);

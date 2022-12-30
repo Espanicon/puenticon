@@ -8,39 +8,48 @@ type WalletProps = {
   handleWalletsChange: any;
 };
 
-const initIconWallet: string[] | null = null;
-const initBscWallet: string[] | null = null;
+function handleLoginGeneral(wallet: string, setArr: any, setSelected: any) {
+  // update array of wallets in the options of the select component
+  setArr((state: string[]) => {
+    if (state.includes(wallet)) {
+      return state;
+    } else {
+      return [...state, wallet];
+    }
+  });
 
-function updateArrayOfIconWallets(newAddress: string, array: string[]) {
-  if (array.includes(newAddress)) {
-    return [...array];
-  } else {
-    return [...array, newAddress];
-  }
+  // updates the currently selected wallet
+  setSelected(wallet);
 }
 
 export default function WalletSelect({
   chain = "icon",
   handleWalletsChange
 }: WalletProps) {
-  const [iconWallet, setIconWallet] = useState(initIconWallet);
-  const [bscWallet, setBscWallet] = useState(initBscWallet);
-  const [selectedIconWallet, setSelectedIconWallet] = useState(initIconWallet);
-  const [selectedBscWallet, setSelectedBscWallet] = useState(initBscWallet);
+  const [selectedBscWallet, setSelectedBscWallet] = useState<null | string>(
+    null
+  );
+  const [selectedIconWallet, setSelectedIconWallet] = useState<null | string>(
+    null
+  );
+  const [arrIconWallets, setArrIconWallets] = useState<string[]>([]);
+  const [arrBscWallets, setArrBscWallets] = useState<string[]>([]);
 
   const defaultStr =
     chain === "icon" ? "Select ICON Wallet" : "select BSC Wallet";
 
   function handleIconLogin(wallet: string) {
-    setIconWallet(state => {
-      const arr = state == null ? [] : state;
-      const newState = updateArrayOfIconWallets(wallet, arr);
-      return newState;
-    });
+    handleLoginGeneral(wallet, setArrIconWallets, setSelectedIconWallet);
+
+    // pass selected wallet to parent component
+    handleWalletsChange({ icon: wallet });
   }
 
-  function handleBscLogin(wallet: string[]) {
-    setBscWallet(wallet);
+  function handleBscLogin(wallet: string) {
+    handleLoginGeneral(wallet, setArrBscWallets, setSelectedBscWallet);
+
+    // pass selected wallet to parent component
+    handleWalletsChange({ bsc: wallet });
   }
 
   function handleSelectChange(evnt: any, chain: string) {
@@ -51,88 +60,78 @@ export default function WalletSelect({
     }
   }
 
-  useEffect(() => {
-    //
-    console.log("selectedIconWallet and selectedBscWallet");
-    console.log(selectedIconWallet);
-    console.log(selectedBscWallet);
-    handleWalletsChange({ icon: selectedIconWallet, bsc: selectedBscWallet });
-  }, [selectedBscWallet, selectedIconWallet]);
-
-  useEffect(() => {
-    //
-    console.log("iconWallet and bscWallet");
-    console.log(iconWallet);
-    console.log(bscWallet);
-  }, [iconWallet, bscWallet]);
-
   return chain === "icon" ? (
-    <div className={styles.walletSelectMain}>
-      <div className={styles.walletSelectChain}>
-        <p>ICON:</p>
-      </div>
-      <div
-        className={
-          iconWallet === null
-            ? `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerRed}`
-            : `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerGreen}`
-        }
-      >
-        <select
-          name="selectList"
-          id="selectList"
-          className={styles.select}
-          value={defaultStr}
-          onChange={evnt => handleSelectChange(evnt, "icon")}
-        >
-          {iconWallet === null ? (
-            <option value="null">{defaultStr}</option>
-          ) : (
-            iconWallet.map((wallet, index) => {
-              return (
-                <option value={`${index}`} key={`${wallet}-${index}`}>
-                  {wallet}
-                </option>
-              );
-            })
-          )}
-        </select>
-      </div>
-      <IconLoginBtn handleWalletSelect={handleIconLogin} />
-    </div>
+    <WalletSelectSubComponent
+      selectedWallet={selectedIconWallet}
+      defaultStr={defaultStr}
+      handleSelectChange={handleSelectChange}
+      arrWallets={arrIconWallets}
+      handleLogin={handleIconLogin}
+      chain={chain}
+    />
   ) : (
+    <WalletSelectSubComponent
+      selectedWallet={selectedBscWallet}
+      defaultStr={defaultStr}
+      handleSelectChange={handleSelectChange}
+      arrWallets={arrBscWallets}
+      handleLogin={handleBscLogin}
+      chain={chain}
+    />
+  );
+}
+
+type WalletSelectSubComponentType = {
+  selectedWallet: string | null;
+  defaultStr: string;
+  handleSelectChange: any;
+  arrWallets: string[];
+  handleLogin: any;
+  chain: string;
+};
+
+function WalletSelectSubComponent({
+  selectedWallet,
+  defaultStr,
+  handleSelectChange,
+  arrWallets,
+  handleLogin,
+  chain
+}: WalletSelectSubComponentType) {
+  return (
     <div className={styles.walletSelectMain}>
       <div className={styles.walletSelectChain}>
-        <p>BSC:</p>
+        <p>{chain === "icon" ? "ICON:" : "BSC:"}</p>
       </div>
       <div
         className={
-          bscWallet === null
+          selectedWallet === null
             ? `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerRed}`
             : `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerGreen}`
         }
       >
         <select
-          name="selectList"
-          id="selectList"
+          name={`selectList-${chain}`}
+          id={`selectListIcon-${chain}`}
           className={styles.select}
-          value={defaultStr}
-          onChange={evnt => handleSelectChange(evnt, "bsc")}
+          value={selectedWallet === null ? defaultStr : selectedWallet}
+          onChange={evnt => handleSelectChange(evnt, chain)}
+          placeholder={defaultStr}
         >
-          {bscWallet === null ? (
-            <option value="null">{defaultStr}</option>
-          ) : (
-            bscWallet.map((wallet, index) => {
-              return (
-                <option value={`${index}`} key={`${wallet}-${index}`}>
-                  {wallet}
-                </option>
-              );
-            })
-          )}
+          {arrWallets.map((wallet, index) => {
+            return (
+              <option value={`${wallet}`} key={`${wallet}-${index}`}>
+                {wallet}
+              </option>
+            );
+          })}
         </select>
       </div>
-      <BscLoginBtn handleWalletSelect={handleBscLogin} />
+      {chain === "icon" ? (
+        <IconLoginBtn handleWalletSelect={handleLogin} />
+      ) : (
+        <BscLoginBtn handleWalletSelect={handleLogin} />
+      )}
     </div>
   );
 }
