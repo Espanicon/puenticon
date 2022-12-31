@@ -15,7 +15,15 @@
   right: 10px;
   display: flex;
   flex-flow: row nowrap;
+  align-items: center;
 }
+
+.networkSelect {
+  width: 80px;
+  height: 30px;
+  margin-left: 5px;
+}
+
 .container {
   width: 100%;
   display: flex;
