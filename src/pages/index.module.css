@@ -34,6 +34,12 @@
   padding: 4rem 1rem;
 }
 
+.middleContainer {
+  width: 50%;
+  min-width: 200px;
+  width: 50%;
+  min-width: 200px;
+}
 @media (min-width: 640px) {
   .container {
     max-width: 640px;
@@ -206,6 +212,19 @@
   /* flex-grow: 1; */
   /* margin-left: auto; */
   margin: 0;
+}
+
+.amountContainer {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  max-width: 80%;
+}
+
+.amountContainer > input {
+  height: 20px;
+  max-width: 70%;
+  margin-left: 5px;
 }
 
 .submitContainer {

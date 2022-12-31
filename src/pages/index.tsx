@@ -131,41 +131,43 @@ function Home() {
                 handleWalletsChange={handleWalletsChange}
               />
               <Hr />
-              <ChainComponent
-                label="From:"
-                fromIcon={fromIcon}
-                handle={handleOnChainFromIcon}
-              />
-              <ChainComponent
-                label="To:"
-                fromIcon={!fromIcon}
-                handle={handleOnChainFromBsc}
-              />
-              <div className={styles.chainContainer}>
-                <p>Token:</p>
-                <select
-                  className={styles.selectFrom}
-                  value={tokenToTransfer}
-                  onChange={handleTokenSelection}
-                >
-                  {tokens.map((token, index) => {
-                    return (
-                      <option value={token} key={`${token}-${index}`}>
-                        {token}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-              <div className={styles.chainContainer}>
-                <p>Amount:</p>
-                <input
-                  className={styles.inputAmount}
-                  type="text"
-                  pattern="[0-9]*"
-                  value={amountToTransfer}
-                  onChange={handleAmountToTransferChange}
+              <div className={styles.middleContainer}>
+                <ChainComponent
+                  label="From:"
+                  fromIcon={fromIcon}
+                  handle={handleOnChainFromIcon}
                 />
+                <ChainComponent
+                  label="To:"
+                  fromIcon={!fromIcon}
+                  handle={handleOnChainFromBsc}
+                />
+                <div className={styles.chainContainer}>
+                  <p>Token:</p>
+                  <select
+                    className={styles.selectFrom}
+                    value={tokenToTransfer}
+                    onChange={handleTokenSelection}
+                  >
+                    {tokens.map((token, index) => {
+                      return (
+                        <option value={token} key={`${token}-${index}`}>
+                          {token}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+                <div className={styles.amountContainer}>
+                  <p>Amount:</p>
+                  <input
+                    className={styles.inputAmount}
+                    type="text"
+                    pattern="[0-9]*"
+                    value={amountToTransfer}
+                    onChange={handleAmountToTransferChange}
+                  />
+                </div>
               </div>
               <Hr />
               <div className={styles.submitContainer}>
