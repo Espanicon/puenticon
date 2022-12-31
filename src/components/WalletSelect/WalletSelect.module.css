@@ -7,6 +7,9 @@
 .walletSelectMain > * {
   margin: 5px;
 }
+.walletSelectMain p {
+  margin: 0;
+}
 .walletSelectInput {
   height: 30px;
 }
