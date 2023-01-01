@@ -4,6 +4,10 @@ import { Hr } from "../components/miscItems/miscItems";
 import WalletSelect from "../components/WalletSelect/WalletSelect";
 import Head from "next/head";
 import lib from "../lib/lib";
+import IconBridgeSDK from "@espanicon/icon-bridge-sdk-js";
+
+const sdkTestnet = new IconBridgeSDK({ useMainnet: false });
+const sdkMainnet = new IconBridgeSDK({ useMainnet: true });
 
 const initWallets: {
   icon: null | string;
