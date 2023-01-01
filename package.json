@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@espanicon/icon-bridge-sdk-js": "file:../../icon-bridge-sdk-js/icon-bridge-sdk-js",
     "next": "13.0.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -21,7 +22,7 @@
     "@typescript-eslint/eslint-plugin": "^5.33.0",
     "@typescript-eslint/parser": "^5.33.0",
     "eslint": "^8.26.0",
-    "eslint-config-next": "13.0.2",
+    "eslint-config-next": "^12.0.4",
     "typescript": "^4.8.4"
   },
   "ct3aMetadata": {

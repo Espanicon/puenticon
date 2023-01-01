@@ -3,6 +3,7 @@ import styles from "./index.module.css";
 import { Hr } from "../components/miscItems/miscItems";
 import WalletSelect from "../components/WalletSelect/WalletSelect";
 import Head from "next/head";
+import lib from "../lib/lib";
 
 const initWallets: {
   icon: null | string;
@@ -20,26 +21,13 @@ const WalletsInit: {
   bsc: null
 };
 
-const tokens = [
-  "ICX",
-  "BNB",
-  "BTCB",
-  "ETH",
-  "sICX",
-  "bnUSD",
-  "BUSD",
-  "USDT",
-  "USDC",
-  "ICZ"
-] as const;
-
-type Tokens = typeof tokens[number];
+const tokens = [...Object.values(lib.tokenNames)];
 
 function Home() {
   const [fromIcon, setFromIcon] = useState<boolean>(true);
-  const [tokenToTransfer, setTokenToTransfer] = useState<Tokens>(tokens[0]);
+  const [tokenToTransfer, setTokenToTransfer] = useState(tokens[0]);
   const [amountToTransfer, setAmountToTransfer] = useState("");
-  const [useMainnet, setUseMainnet] = useState(true);
+  const [useMainnet, setUseMainnet] = useState(false);
   const walletsRef = useRef(WalletsInit);
 
   function handleWalletsChange(wallets: typeof initWallets) {
@@ -181,7 +169,13 @@ function Home() {
   );
 }
 
-function ChainComponent({ label, fromIcon, handle }) {
+type ChainComponentType = {
+  label: string;
+  fromIcon: boolean;
+  handle: any;
+};
+
+function ChainComponent({ label, fromIcon, handle }: ChainComponentType) {
   return (
     <div className={styles.chainContainer}>
       <p>{label}</p>
