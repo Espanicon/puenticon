@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import styles from "./index.module.css";
 import { Hr } from "../components/miscItems/miscItems";
 import WalletSelect from "../components/WalletSelect/WalletSelect";
@@ -103,9 +103,8 @@ function Home() {
     console.log(useMainnet);
     console.log(targetAddress);
 
-    if (fromIcon && walletsRef.current.icon === null) {
-      alert("Please specify and ICON wallet to be ");
-    } else if (!fromIcon && walletsRef.current.icon === null) {
+    if (!targetStatus) {
+      alert("invalid target address");
     }
   }
 
@@ -117,6 +116,16 @@ function Home() {
     }
   }
 
+  useEffect(() => {
+    if (
+      (fromIcon && lib.isValidIconAddress(targetAddress)) ||
+      (!fromIcon && lib.isValidBscAddress(targetAddress))
+    ) {
+      setTargetStatus(true);
+    } else {
+      setTargetStatus(false);
+    }
+  }, [fromIcon, targetAddress]);
   return (
     <>
       <Head>

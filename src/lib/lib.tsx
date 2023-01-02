@@ -89,9 +89,21 @@ const contracts = {
   }
 };
 
+function isValidBscAddress(address: string) {
+  const regex = /([0][xX][a-fA-F0-9]{40})$/;
+  return regex.test(address);
+}
+
+function isValidIconAddress(address: string) {
+  const regex = /([hH][xX][a-fA-F0-9]{40})$/;
+  return regex.test(address);
+}
+
 const lib = {
   tokenNames,
-  contracts
+  contracts,
+  isValidBscAddress,
+  isValidIconAddress
 };
 
 export default lib;
