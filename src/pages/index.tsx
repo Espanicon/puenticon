@@ -91,6 +91,9 @@ function Home() {
     }
   }
 
+  function handleOnTransfer(evnt: any) {
+    // TODO:
+  }
   return (
     <>
       <Head>
@@ -163,7 +166,9 @@ function Home() {
               </div>
               <Hr />
               <div className={styles.submitContainer}>
-                <button className={styles.submitBtn}>Transfer</button>
+                <button className={styles.submitBtn} onClick={handleOnTransfer}>
+                  Transfer
+                </button>
               </div>
             </div>
           </div>
