@@ -32,6 +32,8 @@ function Home() {
   const [tokenToTransfer, setTokenToTransfer] = useState(tokens[0]);
   const [amountToTransfer, setAmountToTransfer] = useState("");
   const [useMainnet, setUseMainnet] = useState(false);
+  const [targetAddress, setTargetAddress] = useState<string | null>(null);
+  const [targetStatus, setTargetStatus] = useState<boolean>(false);
   const walletsRef = useRef(WalletsInit);
 
   function handleWalletsChange(wallets: typeof initWallets) {
@@ -99,12 +101,22 @@ function Home() {
     console.log(tokenToTransfer);
     console.log(amountToTransfer);
     console.log(useMainnet);
+    console.log(targetAddress);
 
-    if (fromIcon && walletsRef.icon === null) {
+    if (fromIcon && walletsRef.current.icon === null) {
       alert("Please specify and ICON wallet to be ");
-    } else if (!fromIcon && walletsRef.icon === null) {
+    } else if (!fromIcon && walletsRef.current.icon === null) {
     }
   }
+
+  function handleOnTargetAddressChange(evnt: any) {
+    const regex = /^[A-Za-z0-9]*$/;
+
+    if (evnt.target.value.match(regex)) {
+      setTargetAddress(evnt.target.value);
+    }
+  }
+
   return (
     <>
       <Head>
@@ -165,6 +177,22 @@ function Home() {
                       })}
                     </select>
                   </div>
+                </div>
+                <div className={styles.targetContainer}>
+                  <p>Target address:</p>
+                  <input
+                    className={styles.inputAmount}
+                    type="text"
+                    value={targetAddress === null ? "" : targetAddress}
+                    onChange={handleOnTargetAddressChange}
+                  />
+                  <div
+                    className={
+                      targetStatus === false
+                        ? `${styles.targetStatus} ${styles.targetStatusRed}`
+                        : `${styles.targetStatus} ${styles.targetStatusGreen}`
+                    }
+                  />
                 </div>
                 <div className={styles.amountContainer}>
                   <p>Amount:</p>

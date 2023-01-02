@@ -234,17 +234,36 @@
   margin: 0;
 }
 
-.amountContainer {
+.amountContainer,
+.targetContainer {
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
   max-width: 80%;
 }
 
+.amountContainer > p,
+.targetContainer > p {
+  margin: 5px;
+}
+
 .amountContainer > input {
   height: 20px;
   max-width: 70%;
   margin-left: 5px;
+}
+
+.targetStatus {
+  margin-left: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999999px;
+}
+.targetStatusRed {
+  background-color: red;
+}
+.targetStatusGreen {
+  background-color: green;
 }
 
 .submitContainer {
