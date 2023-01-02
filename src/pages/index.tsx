@@ -93,6 +93,17 @@ function Home() {
 
   function handleOnTransfer(evnt: any) {
     // TODO:
+    console.log("transfer");
+    console.log(walletsRef.current);
+    console.log(fromIcon);
+    console.log(tokenToTransfer);
+    console.log(amountToTransfer);
+    console.log(useMainnet);
+
+    if (fromIcon && walletsRef.icon === null) {
+      alert("Please specify and ICON wallet to be ");
+    } else if (!fromIcon && walletsRef.icon === null) {
+    }
   }
   return (
     <>
@@ -127,31 +138,33 @@ function Home() {
               />
               <Hr />
               <div className={styles.middleContainer}>
-                <ChainComponent
-                  label="From:"
-                  fromIcon={fromIcon}
-                  handle={handleOnChainFromIcon}
-                />
-                <ChainComponent
-                  label="To:"
-                  fromIcon={!fromIcon}
-                  handle={handleOnChainFromBsc}
-                />
-                <div className={styles.chainContainer}>
-                  <p>Token:</p>
-                  <select
-                    className={styles.selectFrom}
-                    value={tokenToTransfer}
-                    onChange={handleTokenSelection}
-                  >
-                    {tokens.map((token, index) => {
-                      return (
-                        <option value={token} key={`${token}-${index}`}>
-                          {token}
-                        </option>
-                      );
-                    })}
-                  </select>
+                <div className={styles.middleContainerInner}>
+                  <ChainComponent
+                    label="From:"
+                    fromIcon={fromIcon}
+                    handle={handleOnChainFromIcon}
+                  />
+                  <ChainComponent
+                    label="To:"
+                    fromIcon={!fromIcon}
+                    handle={handleOnChainFromBsc}
+                  />
+                  <div className={styles.tokenContainer}>
+                    <p>Token:</p>
+                    <select
+                      className={styles.selectFrom}
+                      value={tokenToTransfer}
+                      onChange={handleTokenSelection}
+                    >
+                      {tokens.map((token, index) => {
+                        return (
+                          <option value={token} key={`${token}-${index}`}>
+                            {token}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
                 </div>
                 <div className={styles.amountContainer}>
                   <p>Amount:</p>

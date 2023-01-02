@@ -55,8 +55,12 @@ export default function WalletSelect({
   function handleSelectChange(evnt: any, chain: string) {
     if (chain === "icon") {
       setSelectedIconWallet(evnt.target.value);
+      // pass selected wallet to parent component
+      handleWalletsChange({ icon: evnt.target.value });
     } else {
       setSelectedBscWallet(evnt.target.value);
+      // pass selected wallet to parent component
+      handleWalletsChange({ bsc: evnt.target.value });
     }
   }
 
