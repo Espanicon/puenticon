@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
 import styles from "./BscLoginBtn.module.css";
 
 type BscLoginType = {
-  handleWalletSelect: any;
+  handleWalletSelect: (wallet: string) => void;
 };
 
 // get ethereum scope from global window object
@@ -29,13 +28,10 @@ export default function BscLoginBtn({ handleWalletSelect }: BscLoginType) {
       }
     }
   }
-  useEffect(() => {
-    //
-  }, []);
 
   return (
     <div className={styles.btnContainer} onClick={handleLogin}>
-      <img src="menu.png" />
+      <img src="menu.png" alt="menu" />
     </div>
   );
 }

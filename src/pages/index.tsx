@@ -28,6 +28,17 @@ const WalletsInit: {
 
 const tokens = [...Object.values(lib.tokenNames)];
 
+function dispatchTxEvent(txData: any) {
+  window.dispatchEvent(
+    new CustomEvent("ICONEX_RELAY_REQUEST", {
+      detail: {
+        type: "REQUEST_JSON-RPC",
+        payload: txData
+      }
+    })
+  );
+}
+
 function Home() {
   const [fromIcon, setFromIcon] = useState<boolean>(true);
   const [tokenToTransfer, setTokenToTransfer] = useState(tokens[0]);
@@ -36,6 +47,8 @@ function Home() {
   const [targetAddress, setTargetAddress] = useState<string | null>(null);
   const [targetStatus, setTargetStatus] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [primaryTxResult, setPrimaryTxResult] = useState<any>(null);
+  const [secondaryTxResult, setSecondaryTxResult] = useState<any>(null);
   const walletsRef = useRef(WalletsInit);
 
   function handleWalletsChange(wallets: typeof initWallets) {
@@ -124,12 +137,13 @@ function Home() {
           if (fromIcon) {
             const query = await sdkMethods.transferNativeCoin(
               targetAddress, // target bsc wallet address
-              "icon", // originating chain
+              "bsc", // target chain
               walletsRef.current.icon, // originating icon wallet address
               amountToTransfer // amount
             );
 
             console.log(query);
+            dispatchTxEvent(query);
           } else {
           }
           break;
@@ -165,6 +179,19 @@ function Home() {
     }
   }
 
+  function handleIconWalletResponse(evnt: any) {
+    const { type, payload } = evnt.detail;
+
+    // switch case for every type of event raised
+    switch (type) {
+      case "RESPONSE_JSON-RPC":
+        setPrimaryTxResult(payload);
+        break;
+      case "CANCEL_JSON-RPC":
+      default:
+    }
+  }
+
   useEffect(() => {
     if (targetAddress !== null) {
       if (
@@ -177,6 +204,26 @@ function Home() {
       }
     }
   }, [fromIcon, targetAddress]);
+
+  useEffect(() => {
+    if (!isModalOpen) {
+      setPrimaryTxResult(null);
+      setSecondaryTxResult(null);
+    }
+  }, [isModalOpen]);
+
+  useEffect(() => {
+    // create event listener for Hana/ICONex
+    window.addEventListener("ICONEX_RELAY_RESPONSE", handleIconWalletResponse);
+
+    // component cleanup after dismount
+    return function cleanup() {
+      window.removeEventListener(
+        "ICONEX_RELAY_RESPONSE",
+        handleIconWalletResponse
+      );
+    };
+  }, []);
   return (
     <>
       <Head>
@@ -191,6 +238,11 @@ function Home() {
       >
         <h1>Test Modal</h1>
         <p>Test paragraph for modal</p>
+        <p>
+          {primaryTxResult === null
+            ? "waiting..."
+            : JSON.stringify(primaryTxResult)}
+        </p>
         <button onClick={() => setIsModalOpen(false)}>Close</button>
       </GenericModal>
       <main className={styles.main}>

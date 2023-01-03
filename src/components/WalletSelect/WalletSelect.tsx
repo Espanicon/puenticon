@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import IconLoginBtn from "../IconLoginBtn/IconLoginBtn";
 import BscLoginBtn from "../BscLoginBtn/BscLoginBtn";
 import styles from "./WalletSelect.module.css";
@@ -68,6 +68,7 @@ export default function WalletSelect({
     <WalletSelectSubComponent
       selectedWallet={selectedIconWallet}
       defaultStr={defaultStr}
+      /* handleSelectChange={() => {}} */
       handleSelectChange={handleSelectChange}
       arrWallets={arrIconWallets}
       handleLogin={handleIconLogin}
