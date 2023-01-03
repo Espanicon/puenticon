@@ -55,6 +55,10 @@ function Home() {
     walletsRef.current = { ...walletsRef.current, ...wallets };
   }
 
+  function handleModalClose() {
+    setIsModalOpen(false);
+  }
+
   function handleOnChainFromIcon(evnt: any) {
     switch (evnt.target.value) {
       case "icon":
@@ -233,7 +237,7 @@ function Home() {
       </Head>
       <GenericModal
         isOpen={isModalOpen}
-        onClose={setIsModalOpen}
+        onClose={handleModalClose}
         useSmall={true}
       >
         <h1>Test Modal</h1>

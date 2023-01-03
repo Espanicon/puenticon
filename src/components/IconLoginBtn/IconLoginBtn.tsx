@@ -1,10 +1,25 @@
-import { useState, useEffect } from "react";
+import {useState, useEffect } from "react";
 import styles from "./IconLoginBtn.module.css";
 
 type IconLoginType = {
-  handleWalletSelect : any;
+  handleWalletSelect : (wallet: string) => void;
 };
+
+interface CustomEventType  extends Event {
+  detail: {
+    type: string;
+    payload: string
+  }
+}
+declare global {
+  interface WindowEventMap {
+    "ICONEX_RELAY_RESPONSE": CustomEventType
+  } 
+}
+
 export default function IconLoginBtn({ handleWalletSelect }: IconLoginType) {
+  const [wallet, setWallet] = useState<null | string>(null)
+
   function handleLogin() {
     // event dispatcher for ICON wallets
     window.dispatchEvent(
@@ -17,12 +32,18 @@ export default function IconLoginBtn({ handleWalletSelect }: IconLoginType) {
   }
 
   useEffect(() => {
-    function iconexRelayResponseEventHandler(evnt: any) {
+    if (wallet !== null) {
+      handleWalletSelect(wallet)
+    }
+  }, [wallet, handleWalletSelect])
+
+  useEffect(() => {
+    function iconexRelayResponseEventHandler(evnt: CustomEventType) {
       const { type, payload } = evnt?.detail;
 
       switch (type) {
         case "RESPONSE_ADDRESS":
-          handleWalletSelect(payload);
+          setWallet(payload);
           break;
         case "CANCEL":
           console.log("ICONEX/Hana wallet selection window closed by user");
@@ -48,7 +69,7 @@ export default function IconLoginBtn({ handleWalletSelect }: IconLoginType) {
 
   return (
     <div className={styles.btnContainer} onClick={handleLogin}>
-      <img src="menu.png" />
+      <img src="menu.png" alt="menu button" />
     </div>
   );
 }

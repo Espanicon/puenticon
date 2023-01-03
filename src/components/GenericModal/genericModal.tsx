@@ -1,10 +1,11 @@
+import type { ReactNode, MouseEvent } from "react";
 import styles from "./genericModal.module.css";
 
 type GenericModalType = {
   isOpen: boolean;
-  onClose: any;
+  onClose: () => void;
   useSmall?: boolean;
-  children?: any;
+  children?: ReactNode;
 };
 export default function GenericModal({
   isOpen,
@@ -16,7 +17,7 @@ export default function GenericModal({
     onClose();
   }
 
-  function onMainClick(event: any) {
+  function onMainClick(event: MouseEvent<HTMLDivElement>) {
     event.stopPropagation();
   }
   return (
