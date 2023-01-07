@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import styles from "./index.module.css";
 import { Hr } from "../components/miscItems/miscItems";
 import WalletSelect from "../components/WalletSelect/WalletSelect";
@@ -10,15 +10,7 @@ import GenericModal from "../components/GenericModal/genericModal";
 const sdkTestnet = new IconBridgeSDK({ useMainnet: false });
 const sdkMainnet = new IconBridgeSDK({ useMainnet: true });
 
-const initWallets: {
-  icon: null | string;
-  bsc: null | string;
-} = {
-  icon: null,
-  bsc: null
-};
-
-const WalletsInit: {
+const WALLETS_INIT: {
   icon?: null | string;
   bsc?: null | string;
 } = {
@@ -26,7 +18,7 @@ const WalletsInit: {
   bsc: null
 };
 
-const tokens = [...Object.values(lib.tokenNames)];
+const tokens: string[] = [...Object.values(lib.tokenNames)];
 
 function dispatchTxEvent(txData: any) {
   window.dispatchEvent(
@@ -49,10 +41,30 @@ function Home() {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [primaryTxResult, setPrimaryTxResult] = useState<any>(null);
   const [secondaryTxResult, setSecondaryTxResult] = useState<any>(null);
-  const walletsRef = useRef(WalletsInit);
+  const [loginWallets, setLoginWallets] = useState(WALLETS_INIT);
 
-  function handleWalletsChange(wallets: typeof initWallets) {
-    walletsRef.current = { ...walletsRef.current, ...wallets };
+  // FOR TESTING
+  lib.useTraceUpdate(
+    {
+      fromIcon,
+      tokenToTransfer,
+      amountToTransfer,
+      useMainnet,
+      targetAddress,
+      targetStatus,
+      isModalOpen,
+      primaryTxResult,
+      secondaryTxResult,
+      loginWallets
+    },
+    "Home"
+  );
+  //
+
+  function handleWalletsChange(wallets: typeof WALLETS_INIT) {
+    setLoginWallets(state => {
+      return { ...state, ...wallets };
+    });
   }
 
   function handleModalClose() {
@@ -112,19 +124,22 @@ function Home() {
     }
   }
 
-  async function handleOnTransfer(evnt: any) {
+  async function handleOnTransfer() {
     // TODO:
     console.log("transfer");
-    console.log(walletsRef.current);
+    console.log(loginWallets);
     console.log(fromIcon);
     console.log(tokenToTransfer);
     console.log(amountToTransfer);
     console.log(useMainnet);
     console.log(targetAddress);
 
+    // reset the primary and secondary tx result states
+    setPrimaryTxResult(null);
+    setSecondaryTxResult(null);
     if (
-      (fromIcon && walletsRef.current.icon === null) ||
-      (!fromIcon && walletsRef.current.bsc === null)
+      (fromIcon && loginWallets.icon === null) ||
+      (!fromIcon && loginWallets.bsc === null)
     ) {
       alert("Invalid source wallet");
       return;
@@ -135,23 +150,50 @@ function Home() {
     } else {
       const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
       const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
+      let query: any = null;
 
       switch (tokenToTransfer) {
         case lib.tokenNames.icx:
           if (fromIcon) {
-            const query = await sdkMethods.transferNativeCoin(
+            query = await sdkMethods.transferNativeCoin(
               targetAddress, // target bsc wallet address
               "bsc", // target chain
-              walletsRef.current.icon, // originating icon wallet address
+              loginWallets.icon, // originating icon wallet address
               amountToTransfer // amount
             );
-
-            console.log(query);
-            dispatchTxEvent(query);
           } else {
           }
           break;
         case lib.tokenNames.sicx:
+          if (fromIcon) {
+            const contractAddress = useMainnet
+              ? lib.contracts.icon[lib.tokenNames.sicx]!.mainnet
+              : lib.contracts.icon[lib.tokenNames.sicx]!.testnet;
+
+            query = await sdkMethods.transferToBTSContract(
+              amountToTransfer,
+              contractAddress,
+              loginWallets.icon
+            );
+            console.log("query");
+            console.log(query);
+            //
+            // sdkMethods.approveBTSContract(
+            // amount,
+            // tokenContract,
+            // from,
+            // stepLimit
+            // )
+            //
+            // sdkMethods.transfer(
+            // _coinName,
+            // _value,
+            // _to,
+            // from,
+            // stepLimit
+            // )
+          } else {
+          }
           break;
         case lib.tokenNames.bnb:
           break;
@@ -171,6 +213,9 @@ function Home() {
           break;
         default:
       }
+
+      console.log(query);
+      dispatchTxEvent(query);
     }
     setIsModalOpen(true);
   }
@@ -189,12 +234,68 @@ function Home() {
     // switch case for every type of event raised
     switch (type) {
       case "RESPONSE_JSON-RPC":
-        setPrimaryTxResult(payload);
+        if (primaryTxResult === null) {
+          setPrimaryTxResult(payload);
+        } else {
+          setSecondaryTxResult(payload);
+        }
         break;
       case "CANCEL_JSON-RPC":
       default:
     }
   }
+
+  useEffect(() => {
+    async function makeSecondTx() {
+      const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
+      const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
+
+      switch (tokenToTransfer) {
+        case lib.tokenNames.icx:
+          if (!fromIcon) {
+            // ICX transfer from BSC to ICON
+          }
+          break;
+        case lib.tokenNames.sicx:
+          break;
+        case lib.tokenNames.bnb:
+          if (fromIcon) {
+            // bnb transfer from ICON to BSC
+            // fetch tx result on chain from the first tx made
+            // if the tx exists on the chain, validate if it was
+            // correctly processed by the chain.
+            // if the tx was correct execute the second tx, if not
+            // set secondaryTxResult value as an error
+            // setSecondaryTxResult() HERE
+          }
+          break;
+        case lib.tokenNames.btcb:
+          break;
+        case lib.tokenNames.eth:
+          break;
+        case lib.tokenNames.bnusd:
+          break;
+        case lib.tokenNames.busd:
+          break;
+        case lib.tokenNames.usdt:
+          break;
+        case lib.tokenNames.usdc:
+          break;
+        case lib.tokenNames.icz:
+          break;
+        default:
+      }
+    }
+
+    if (primaryTxResult != null) {
+      if (primaryTxResult.error != null) {
+        setSecondaryTxResult({ error: "Pre approval tx failed" });
+      } else {
+        // TODO: write here logic to make second transaction
+        makeSecondTx();
+      }
+    }
+  }, [primaryTxResult, useMainnet, fromIcon, tokenToTransfer]);
 
   useEffect(() => {
     if (targetAddress !== null) {
@@ -235,20 +336,15 @@ function Home() {
         <meta name="description" content="Generated by create-t3-app" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <GenericModal
+      <TxModal
         isOpen={isModalOpen}
         onClose={handleModalClose}
-        useSmall={true}
-      >
-        <h1>Test Modal</h1>
-        <p>Test paragraph for modal</p>
-        <p>
-          {primaryTxResult === null
-            ? "waiting..."
-            : JSON.stringify(primaryTxResult)}
-        </p>
-        <button onClick={() => setIsModalOpen(false)}>Close</button>
-      </GenericModal>
+        onClickHandler={setIsModalOpen}
+        fromIcon={fromIcon}
+        tokenToTransfer={tokenToTransfer}
+        primaryTxResult={primaryTxResult}
+        secondaryTxResult={secondaryTxResult}
+      />
       <main className={styles.main}>
         <div className={styles.networkSelection}>
           <p>Network:</p>
@@ -363,6 +459,81 @@ function ChainComponent({ label, fromIcon, handle }: ChainComponentType) {
         <option value="bsc">BSC</option>
       </select>
     </div>
+  );
+}
+
+type TxModalType = {
+  isOpen: boolean;
+  onClose: any;
+  onClickHandler: any;
+  fromIcon: boolean;
+  tokenToTransfer: string | undefined;
+  primaryTxResult: any;
+  secondaryTxResult: any;
+};
+
+function TxModal({
+  isOpen,
+  onClose,
+  onClickHandler,
+  fromIcon,
+  tokenToTransfer,
+  primaryTxResult,
+  secondaryTxResult
+}: TxModalType) {
+  const header = fromIcon ? "ICON -> BSC" : "BSC -> ICON";
+  return (
+    <GenericModal isOpen={isOpen} onClose={onClose} useSmall={true}>
+      <h1>{header}</h1>
+      {fromIcon ? (
+        tokenToTransfer === lib.tokenNames.icx ? (
+          <>
+            <p>Transferring ICX from ICON to BSC</p>
+            <TxResultComponent txResult={primaryTxResult} />
+          </>
+        ) : lib.iconNativeTokens.includes(tokenToTransfer!) ? (
+          <>
+            <p>Transferring ICON native token</p>
+            <p>Pre approval transaction result:</p>
+            <TxResultComponent txResult={secondaryTxResult} />
+            <p>Main transaction result:</p>
+            <TxResultComponent txResult={primaryTxResult} />
+          </>
+        ) : (
+          <>
+            <p>transferring ICON wrapped token</p>
+            <p>Pre approval transaction result:</p>
+            <TxResultComponent txResult={secondaryTxResult} />
+            <p>Main transaction result:</p>
+            <TxResultComponent txResult={primaryTxResult} />
+          </>
+        )
+      ) : tokenToTransfer === lib.tokenNames.bnb ? (
+        <>
+          <p>transferring BNB from BSC to ICON</p>
+        </>
+      ) : (
+        <>
+          <p>transferring token from BSC to ICON</p>
+        </>
+      )}
+
+      <button onClick={() => onClickHandler(false)}>Close</button>
+    </GenericModal>
+  );
+}
+
+type TxResultComponentType = {
+  txResult: any;
+};
+
+function TxResultComponent({ txResult }: TxResultComponentType) {
+  return txResult === null ? (
+    <p>waiting...</p>
+  ) : txResult.error != null ? (
+    <p>Error response from chain: {txResult.error}</p>
+  ) : (
+    <p>Tx hash result: {txResult.result}</p>
   );
 }
 export default Home;

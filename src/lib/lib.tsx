@@ -1,3 +1,5 @@
+import { useRef, useEffect } from "react";
+
 const tokenNames = {
   icx: "ICX",
   sicx: "sICX",
@@ -10,6 +12,9 @@ const tokenNames = {
   usdc: "USDC",
   icz: "ICZ"
 };
+
+const iconNativeTokens = [tokenNames.sicx, tokenNames.bnusd];
+
 const contracts = {
   icon: {
     [tokenNames.bnb]: {
@@ -99,11 +104,45 @@ function isValidIconAddress(address: string) {
   return regex.test(address);
 }
 
+export function useTraceUpdate(props: any, from = "default", print = true) {
+  const prev = useRef(props);
+  useEffect(() => {
+    const changedProps = Object.entries(props).reduce((ps: any, [k, v]) => {
+      let newV: any;
+      let newK: any;
+      const flag = false;
+      if (flag) {
+        // if (k === "pageItems") {
+        newV = JSON.stringify(v);
+        newK = JSON.stringify(prev.current[k]);
+      } else {
+        newV = v;
+        newK = prev.current[k];
+      }
+      if (newK !== newV) {
+        ps[k] = [newK, newV];
+      }
+      return ps;
+    }, {});
+
+    if (Object.keys(changedProps).length > 0) {
+      console.log("no change in props");
+      if (print) {
+        console.log(`Running from ${from}`);
+        console.log("Changed props:", changedProps);
+      }
+    }
+    prev.current = props;
+  });
+}
+
 const lib = {
   tokenNames,
+  iconNativeTokens,
   contracts,
   isValidBscAddress,
-  isValidIconAddress
+  isValidIconAddress,
+  useTraceUpdate
 };
 
 export default lib;

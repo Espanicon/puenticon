@@ -18,7 +18,6 @@ declare global {
 }
 
 export default function IconLoginBtn({ handleWalletSelect }: IconLoginType) {
-  const [wallet, setWallet] = useState<null | string>(null)
 
   function handleLogin() {
     // event dispatcher for ICON wallets
@@ -32,18 +31,12 @@ export default function IconLoginBtn({ handleWalletSelect }: IconLoginType) {
   }
 
   useEffect(() => {
-    if (wallet !== null) {
-      handleWalletSelect(wallet)
-    }
-  }, [wallet, handleWalletSelect])
-
-  useEffect(() => {
     function iconexRelayResponseEventHandler(evnt: CustomEventType) {
       const { type, payload } = evnt?.detail;
 
       switch (type) {
         case "RESPONSE_ADDRESS":
-          setWallet(payload);
+          handleWalletSelect(payload)
           break;
         case "CANCEL":
           console.log("ICONEX/Hana wallet selection window closed by user");
