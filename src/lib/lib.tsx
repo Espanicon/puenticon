@@ -1,4 +1,32 @@
 import { useRef, useEffect } from "react";
+import EspaniconSDKWeb from "@espanicon/espanicon-sdk";
+
+const RPC_NODES = {
+  ctz: {
+    nid: 1,
+    hostname: "ctz.solidwallet.io"
+  },
+  icon: {
+    nid: 1,
+    hostname: "api.icon.community"
+  },
+  espanicon: {
+    nid: 1,
+    hostname: "api.icon.community"
+  },
+  sejong: {
+    nid: 83,
+    hostname: "sejong.net.solidwallet.io"
+  },
+  berlin: {
+    nid: 7,
+    hostname: "berlin.net.solidwallet.io"
+  },
+  lisbon: {
+    nid: 2,
+    hostname: "lisbon.net.solidwallet.io"
+  }
+};
 
 const tokenNames = {
   icx: "ICX",
@@ -136,13 +164,118 @@ export function useTraceUpdate(props: any, from = "default", print = true) {
   });
 }
 
+async function getTxResult(
+  hash: string,
+  useMainnet: boolean,
+  maxIterations: number = 10
+) {
+  console.log("getTxResult");
+  console.log(hash);
+  console.log(useMainnet);
+
+  let sdk: any = null;
+
+  if (!useMainnet) {
+    sdk = new EspaniconSDKWeb(RPC_NODES.lisbon.hostname, RPC_NODES.lisbon.nid);
+  } else {
+    sdk = new EspaniconSDKWeb(RPC_NODES.icon.hostname, RPC_NODES.icon.nid);
+  }
+  //
+  for (let i = 0; i < maxIterations; i++) {
+    // fetch tx from blockchain
+    console.log(`round ${i}`);
+    const txResult = await sdk.getTxResult(hash);
+
+    if (txResult.error == null) {
+      return txResult;
+    } else {
+      await sleep();
+    }
+  }
+
+  return null;
+}
+
+function sleep(time: number = 1000): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, time));
+}
+
+function getBtpCoinName(tokenLabel: string, useMainnet: boolean) {
+  let coinName: null | string = null;
+  if (useMainnet) {
+    switch (tokenLabel) {
+      case tokenNames.icx:
+        coinName = "btp-0x1.icon-ICX";
+        break;
+      case tokenNames.sicx:
+        coinName = "btp-0x1.icon-sICX";
+        break;
+      case tokenNames.bnb:
+        coinName = "btp-0x38.bsc-BNB";
+        break;
+      case tokenNames.btcb:
+        coinName = "btp-0x38.bsc-BTCB";
+        break;
+      case tokenNames.eth:
+        coinName = "btp-0x38.bsc-ETH";
+        break;
+      case tokenNames.bnusd:
+        coinName = "btp-0x1.icon-bnUSD";
+        break;
+      case tokenNames.busd:
+        coinName = "btp-0x38.bsc-BUSD";
+        break;
+      case tokenNames.usdt:
+        coinName = "btp-0x38.bsc-USDT";
+        break;
+      case tokenNames.usdc:
+        coinName = "btp-0x38.bsc-USDC";
+        break;
+      default:
+    }
+  } else {
+    switch (tokenLabel) {
+      case tokenNames.icx:
+        coinName = "btp-0x2.icon-ICX";
+        break;
+      case tokenNames.sicx:
+        coinName = "btp-0x2.icon-sICX";
+        break;
+      case tokenNames.bnb:
+        coinName = "btp-0x61.bsc-BNB";
+        break;
+      case tokenNames.btcb:
+        coinName = "btp-0x61.bsc-BTCB";
+        break;
+      case tokenNames.eth:
+        coinName = "btp-0x61.bsc-ETH";
+        break;
+      case tokenNames.bnusd:
+        coinName = "btp-0x2.icon-bnUSD";
+        break;
+      case tokenNames.busd:
+        coinName = "btp-0x61.bsc-BUSD";
+        break;
+      case tokenNames.usdt:
+        coinName = "btp-0x61.bsc-USDT";
+        break;
+      case tokenNames.usdc:
+        coinName = "btp-0x61.bsc-USDC";
+        break;
+      default:
+    }
+  }
+}
+
 const lib = {
   tokenNames,
   iconNativeTokens,
   contracts,
   isValidBscAddress,
   isValidIconAddress,
-  useTraceUpdate
+  useTraceUpdate,
+  getTxResult,
+  getBtpCoinName
 };
 
 export default lib;

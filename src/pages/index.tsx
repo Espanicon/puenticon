@@ -42,6 +42,7 @@ function Home() {
   const [primaryTxResult, setPrimaryTxResult] = useState<any>(null);
   const [secondaryTxResult, setSecondaryTxResult] = useState<any>(null);
   const [loginWallets, setLoginWallets] = useState(WALLETS_INIT);
+  const [firstTxResult, setFirstTxResult] = useState<any>(null);
 
   // FOR TESTING
   lib.useTraceUpdate(
@@ -161,6 +162,8 @@ function Home() {
               loginWallets.icon, // originating icon wallet address
               amountToTransfer // amount
             );
+            console.log("query");
+            console.log(query);
           } else {
           }
           break;
@@ -169,6 +172,8 @@ function Home() {
             const contractAddress = useMainnet
               ? lib.contracts.icon[lib.tokenNames.sicx]!.mainnet
               : lib.contracts.icon[lib.tokenNames.sicx]!.testnet;
+            console.log("token contract");
+            console.log(contractAddress);
 
             query = await sdkMethods.transferToBTSContract(
               amountToTransfer,
@@ -246,6 +251,29 @@ function Home() {
   }
 
   useEffect(() => {
+    //
+    async function makeSecondTransfer() {
+      if (typeof tokenToTransfer === "string") {
+        const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
+        const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
+
+        const btpCoinName = lib.getBtpCoinName(tokenToTransfer, useMainnet);
+        const query = await sdkMethods.transfer(
+          btpCoinName,
+          amountToTransfer,
+          targetAddress,
+          loginWallets.icon
+        );
+        console.log("query");
+        console.log(query);
+        setSecondaryTxResult(query);
+      }
+    }
+
+    makeSecondTransfer();
+  }, [firstTxResult, useMainnet, fromIcon, tokenToTransfer]);
+
+  useEffect(() => {
     async function makeSecondTx() {
       const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
       const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
@@ -257,6 +285,17 @@ function Home() {
           }
           break;
         case lib.tokenNames.sicx:
+          if (fromIcon) {
+            console.log("fetching tx result");
+            const txResult = await lib.getTxResult(
+              primaryTxResult.result,
+              useMainnet
+            );
+
+            console.log("primary tx");
+            console.log(txResult);
+            setFirstTxResult(txResult);
+          }
           break;
         case lib.tokenNames.bnb:
           if (fromIcon) {

@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@espanicon/espanicon-sdk": "github:Espanicon/espanicon-sdk",
     "@espanicon/icon-bridge-sdk-js": "file:../../icon-bridge-sdk-js/icon-bridge-sdk-js",
     "next": "13.0.2",
     "react": "18.2.0",
