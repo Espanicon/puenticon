@@ -180,8 +180,6 @@ function Home() {
             loginWallets.icon, // originating icon wallet address
             amountToTransfer // amount
           );
-          console.log("query");
-          console.log(query);
         } else {
           const contractAddress = useMainnet
             ? lib.contracts.icon[tokenToTransfer]!.mainnet
@@ -200,8 +198,6 @@ function Home() {
               contractAddress,
               loginWallets.icon
             );
-            console.log("query");
-            console.log(query);
           } else if (lib.iconTokens.wrapped.includes(tokenToTransfer)) {
             // if the token to transfer is an ICON wrapped token the proccess
             // requires 2 tx. the first tx is to call the 'approve' method of
@@ -214,11 +210,10 @@ function Home() {
               contractAddress,
               loginWallets.icon
             );
-            console.log("query");
-            console.log(query);
           }
         }
 
+        console.log("first query");
         console.log(query);
         dispatchTxEvent(query);
       }
@@ -264,7 +259,7 @@ function Home() {
           targetAddress,
           loginWallets.icon
         );
-        console.log("query");
+        console.log("second query");
         console.log(query);
         dispatchTxEvent(query);
       }
@@ -294,8 +289,8 @@ function Home() {
         } else {
           checkFirstTxAndDispatchSecondTx();
         }
-        // if the originating chain is BSC and the token to transfer is not BNB
       } else if (!fromIcon && tokenToTransfer !== lib.tokenNames.bnb) {
+        // if the originating chain is BSC and the token to transfer is not BNB
       }
     }
   }, [primaryTxResult, useMainnet, fromIcon, tokenToTransfer]);
