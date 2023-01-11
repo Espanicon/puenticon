@@ -18,7 +18,20 @@ const WALLETS_INIT: {
   bsc: null
 };
 
-const tokens: string[] = [...Object.values(lib.tokenNames)];
+type Tokens = typeof lib.tokens[number];
+
+const TOKENS_AVAILABLE: Partial<typeof lib.tokens> = [
+  lib.tokenNames.icx,
+  // lib.tokenNames.sicx,
+  lib.tokenNames.bnb,
+  lib.tokenNames.btcb,
+  lib.tokenNames.eth,
+  // lib.tokenNames.bnusd,
+  lib.tokenNames.busd,
+  lib.tokenNames.usdt,
+  lib.tokenNames.usdc
+  // lib.tokenNames.icz
+];
 
 function dispatchTxEvent(txData: any) {
   window.dispatchEvent(
@@ -33,7 +46,9 @@ function dispatchTxEvent(txData: any) {
 
 function Home() {
   const [fromIcon, setFromIcon] = useState<boolean>(true);
-  const [tokenToTransfer, setTokenToTransfer] = useState(tokens[0]);
+  const [tokenToTransfer, setTokenToTransfer] = useState<Tokens>(
+    lib.tokens[0]!
+  );
   const [amountToTransfer, setAmountToTransfer] = useState("");
   const [useMainnet, setUseMainnet] = useState(false);
   const [targetAddress, setTargetAddress] = useState<string | null>(null);
@@ -138,6 +153,7 @@ function Home() {
     // reset the primary and secondary tx result states
     setPrimaryTxResult(null);
     setSecondaryTxResult(null);
+    setFirstTxResult(null);
     if (
       (fromIcon && loginWallets.icon === null) ||
       (!fromIcon && loginWallets.bsc === null)
@@ -153,27 +169,31 @@ function Home() {
       const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
       let query: any = null;
 
-      switch (tokenToTransfer) {
-        case lib.tokenNames.icx:
-          if (fromIcon) {
-            query = await sdkMethods.transferNativeCoin(
-              targetAddress, // target bsc wallet address
-              "bsc", // target chain
-              loginWallets.icon, // originating icon wallet address
-              amountToTransfer // amount
-            );
-            console.log("query");
-            console.log(query);
-          } else {
-          }
-          break;
-        case lib.tokenNames.sicx:
-          if (fromIcon) {
-            const contractAddress = useMainnet
-              ? lib.contracts.icon[lib.tokenNames.sicx]!.mainnet
-              : lib.contracts.icon[lib.tokenNames.sicx]!.testnet;
-            console.log("token contract");
-            console.log(contractAddress);
+      if (fromIcon) {
+        // if originating chain is ICON
+        if (tokenToTransfer === lib.tokenNames.icx) {
+          // if token to transfer is ICX. use 'transferNativeCoin' method
+          // of btp contract.
+          query = await sdkMethods.transferNativeCoin(
+            targetAddress, // target bsc wallet address
+            "bsc", // target chain
+            loginWallets.icon, // originating icon wallet address
+            amountToTransfer // amount
+          );
+          console.log("query");
+          console.log(query);
+        } else {
+          const contractAddress = useMainnet
+            ? lib.contracts.icon[tokenToTransfer]!.mainnet
+            : lib.contracts.icon[tokenToTransfer]!.testnet;
+          console.log("token contract");
+          console.log(contractAddress);
+
+          if (lib.iconTokens.native.includes(tokenToTransfer)) {
+            // if token to transfer is a native ICON token, the proccess
+            // requires 2 transfers. The first one is to transfer the amount
+            // of tokens to the BTP contract and then the second one is to call
+            // the 'transfer' method of the BTP contract.
 
             query = await sdkMethods.transferToBTSContract(
               amountToTransfer,
@@ -182,45 +202,26 @@ function Home() {
             );
             console.log("query");
             console.log(query);
-            //
-            // sdkMethods.approveBTSContract(
-            // amount,
-            // tokenContract,
-            // from,
-            // stepLimit
-            // )
-            //
-            // sdkMethods.transfer(
-            // _coinName,
-            // _value,
-            // _to,
-            // from,
-            // stepLimit
-            // )
-          } else {
-          }
-          break;
-        case lib.tokenNames.bnb:
-          break;
-        case lib.tokenNames.btcb:
-          break;
-        case lib.tokenNames.eth:
-          break;
-        case lib.tokenNames.bnusd:
-          break;
-        case lib.tokenNames.busd:
-          break;
-        case lib.tokenNames.usdt:
-          break;
-        case lib.tokenNames.usdc:
-          break;
-        case lib.tokenNames.icz:
-          break;
-        default:
-      }
+          } else if (lib.iconTokens.wrapped.includes(tokenToTransfer)) {
+            // if the token to transfer is an ICON wrapped token the proccess
+            // requires 2 tx. the first tx is to call the 'approve' method of
+            // the token contract and approve the BTP contract for the required
+            // amount and the second tx is to call the 'transfer' method of the
+            // btp contract.
 
-      console.log(query);
-      dispatchTxEvent(query);
+            query = await sdkMethods.approveBTSContract(
+              amountToTransfer,
+              contractAddress,
+              loginWallets.icon
+            );
+            console.log("query");
+            console.log(query);
+          }
+        }
+
+        console.log(query);
+        dispatchTxEvent(query);
+      }
     }
     setIsModalOpen(true);
   }
@@ -251,8 +252,7 @@ function Home() {
   }
 
   useEffect(() => {
-    //
-    async function makeSecondTransfer() {
+    async function dispatchSecondTx() {
       if (typeof tokenToTransfer === "string") {
         const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
         const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
@@ -266,72 +266,36 @@ function Home() {
         );
         console.log("query");
         console.log(query);
-        setSecondaryTxResult(query);
+        dispatchTxEvent(query);
       }
     }
 
-    makeSecondTransfer();
-  }, [firstTxResult, useMainnet, fromIcon, tokenToTransfer]);
+    async function checkFirstTxAndDispatchSecondTx() {
+      const txResult = await lib.getTxResult(
+        primaryTxResult.result,
+        useMainnet
+      );
 
-  useEffect(() => {
-    async function makeSecondTx() {
-      const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
-      const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
-
-      switch (tokenToTransfer) {
-        case lib.tokenNames.icx:
-          if (!fromIcon) {
-            // ICX transfer from BSC to ICON
-          }
-          break;
-        case lib.tokenNames.sicx:
-          if (fromIcon) {
-            console.log("fetching tx result");
-            const txResult = await lib.getTxResult(
-              primaryTxResult.result,
-              useMainnet
-            );
-
-            console.log("primary tx");
-            console.log(txResult);
-            setFirstTxResult(txResult);
-          }
-          break;
-        case lib.tokenNames.bnb:
-          if (fromIcon) {
-            // bnb transfer from ICON to BSC
-            // fetch tx result on chain from the first tx made
-            // if the tx exists on the chain, validate if it was
-            // correctly processed by the chain.
-            // if the tx was correct execute the second tx, if not
-            // set secondaryTxResult value as an error
-            // setSecondaryTxResult() HERE
-          }
-          break;
-        case lib.tokenNames.btcb:
-          break;
-        case lib.tokenNames.eth:
-          break;
-        case lib.tokenNames.bnusd:
-          break;
-        case lib.tokenNames.busd:
-          break;
-        case lib.tokenNames.usdt:
-          break;
-        case lib.tokenNames.usdc:
-          break;
-        case lib.tokenNames.icz:
-          break;
-        default:
+      // validate here the result of getTxResult
+      // if the last tx resulted in error dont execute
+      // the second tx.
+      if (txResult != null && txResult.failure == null) {
+        await dispatchSecondTx();
       }
     }
 
-    if (primaryTxResult != null) {
-      if (primaryTxResult.error != null) {
-        setSecondaryTxResult({ error: "Pre approval tx failed" });
-      } else {
-        // TODO: write here logic to make second transaction
-        makeSecondTx();
+    if (primaryTxResult != null && tokenToTransfer != null) {
+      if (fromIcon && tokenToTransfer !== lib.tokenNames.icx) {
+        // if the originating chain is ICON and the token to transfer is not
+        // ICX.  Dispatch the second tx.
+
+        if (primaryTxResult.error != null) {
+          setSecondaryTxResult({ error: "Pre approval tx failed" });
+        } else {
+          checkFirstTxAndDispatchSecondTx();
+        }
+        // if the originating chain is BSC and the token to transfer is not BNB
+      } else if (!fromIcon && tokenToTransfer !== lib.tokenNames.bnb) {
       }
     }
   }, [primaryTxResult, useMainnet, fromIcon, tokenToTransfer]);
@@ -368,6 +332,7 @@ function Home() {
       );
     };
   }, []);
+
   return (
     <>
       <Head>
@@ -428,7 +393,7 @@ function Home() {
                       value={tokenToTransfer}
                       onChange={handleTokenSelection}
                     >
-                      {tokens.map((token, index) => {
+                      {TOKENS_AVAILABLE.map((token, index) => {
                         return (
                           <option value={token} key={`${token}-${index}`}>
                             {token}

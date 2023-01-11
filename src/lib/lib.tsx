@@ -41,6 +41,21 @@ const tokenNames = {
   icz: "ICZ"
 };
 
+const tokens = [...Object.values(tokenNames)] as const;
+
+const iconTokens = {
+  native: [tokenNames.sicx, tokenNames.bnusd],
+  wrapped: [
+    tokenNames.bnb,
+    tokenNames.btcb,
+    tokenNames.eth,
+    tokenNames.busd,
+    tokenNames.usdt,
+    tokenNames.usdc,
+    tokenNames.icz
+  ]
+};
+
 const iconNativeTokens = [tokenNames.sicx, tokenNames.bnusd];
 
 const contracts = {
@@ -59,11 +74,13 @@ const contracts = {
     },
     [tokenNames.sicx]: {
       mainnet: "cx2609b924e33ef00b648a409245c7ea394c467824",
-      testnet: "cx3044ad389267b50eb3c57103eade0c5a72261c1a"
+      testnet: "cx2d013cb55781fb54b81d629aa4b611be2daec564",
+      testnet2: "cx3044ad389267b50eb3c57103eade0c5a72261c1a"
     },
     [tokenNames.bnusd]: {
       mainnet: "cx88fd7df7ddff82f7cc735c871dc519838cb235bb",
-      testnet: "cx7f45afe9d8ce95e80c1be7c4eef2ea0dd843c4e3"
+      testnet: "cxcadcaf77d8e46089fd3d98fcf71eabee1700f148",
+      testnet2: "cx7f45afe9d8ce95e80c1be7c4eef2ea0dd843c4e3"
     },
     [tokenNames.busd]: {
       mainnet: "cxb49d82c46be6b61cab62aaf9824b597c6cf8a25d",
@@ -167,7 +184,7 @@ export function useTraceUpdate(props: any, from = "default", print = true) {
 async function getTxResult(
   hash: string,
   useMainnet: boolean,
-  maxIterations: number = 10
+  maxIterations = 10
 ) {
   console.log("getTxResult");
   console.log(hash);
@@ -196,7 +213,7 @@ async function getTxResult(
   return null;
 }
 
-function sleep(time: number = 1000): Promise<void> {
+function sleep(time = 1000): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, time));
 }
 
@@ -265,10 +282,13 @@ function getBtpCoinName(tokenLabel: string, useMainnet: boolean) {
       default:
     }
   }
+  return coinName;
 }
 
 const lib = {
   tokenNames,
+  iconTokens,
+  tokens,
   iconNativeTokens,
   contracts,
   isValidBscAddress,
