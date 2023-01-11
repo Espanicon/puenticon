@@ -23,13 +23,13 @@ type Tokens = typeof lib.tokens[number];
 const TOKENS_AVAILABLE: Partial<typeof lib.tokens> = [
   lib.tokenNames.icx,
   // lib.tokenNames.sicx,
-  lib.tokenNames.bnb,
-  lib.tokenNames.btcb,
-  lib.tokenNames.eth,
+  lib.tokenNames.bnb
+  // lib.tokenNames.btcb,
+  // lib.tokenNames.eth,
   // lib.tokenNames.bnusd,
-  lib.tokenNames.busd,
-  lib.tokenNames.usdt,
-  lib.tokenNames.usdc
+  // lib.tokenNames.busd,
+  // lib.tokenNames.usdt,
+  // lib.tokenNames.usdc
   // lib.tokenNames.icz
 ];
 
