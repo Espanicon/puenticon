@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import styles from "./index.module.css";
 import { Hr } from "../components/miscItems/miscItems";
 import WalletSelect from "../components/WalletSelect/WalletSelect";
+import DetailsSection from "../components/DetailsSection/DetailsSection";
 import Head from "next/head";
 import lib from "../lib/lib";
 import IconBridgeSDK from "@espanicon/icon-bridge-sdk-js";
@@ -438,6 +439,16 @@ function Home() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+        <div className={styles.container}>
+          <div className={styles.card}>
+            <DetailsSection
+              iconWallet={"string1"}
+              iconWalletDetails={"string2"}
+              bscWallet={"string3"}
+              bscWalletDetails={"string4"}
+            />
           </div>
         </div>
       </main>
