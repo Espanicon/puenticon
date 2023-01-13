@@ -280,6 +280,14 @@ function Home() {
   }
 
   useEffect(() => {
+    if (loginWallets.icon != null) {
+      //
+    } else if (loginWallets.bsc != null) {
+      //
+    }
+  }, [loginWallets]);
+
+  useEffect(() => {
     if (tempTxResult != null) {
       if (!waitingSecondTx.current) {
         setPrimaryTxResult(tempTxResult);
@@ -444,9 +452,9 @@ function Home() {
         <div className={styles.container}>
           <div className={styles.card}>
             <DetailsSection
-              iconWallet={"string1"}
+              iconWallet={loginWallets.icon}
               iconWalletDetails={"string2"}
-              bscWallet={"string3"}
+              bscWallet={loginWallets.bsc}
               bscWalletDetails={"string4"}
             />
           </div>
