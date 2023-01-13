@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from "./index.module.css";
 import { Hr } from "../components/miscItems/miscItems";
 import WalletSelect from "../components/WalletSelect/WalletSelect";
@@ -57,6 +57,9 @@ function Home() {
   const [primaryTxResult, setPrimaryTxResult] = useState<any>(null);
   const [secondaryTxResult, setSecondaryTxResult] = useState<any>(null);
   const [loginWallets, setLoginWallets] = useState(WALLETS_INIT);
+  const [tempTxResult, setTempTxResult] = useState<any>(null);
+
+  const waitingSecondTx = useRef(false);
 
   // FOR TESTING
   lib.useTraceUpdate(
@@ -84,9 +87,16 @@ function Home() {
 
   function handleModalClose() {
     setIsModalOpen(false);
+    // reset the primary and secondary tx result states
+    setPrimaryTxResult(null);
+    setSecondaryTxResult(null);
   }
 
   function handleOnChainFromIcon(evnt: any) {
+    // reset the primary and secondary tx result states
+    setPrimaryTxResult(null);
+    setSecondaryTxResult(null);
+
     switch (evnt.target.value) {
       case "icon":
         setFromIcon(true);
@@ -111,6 +121,10 @@ function Home() {
   }
 
   function handleTokenSelection(evnt: any) {
+    // reset the primary and secondary tx result states
+    setPrimaryTxResult(null);
+    setSecondaryTxResult(null);
+
     setTokenToTransfer(evnt.target.value);
   }
 
@@ -149,9 +163,6 @@ function Home() {
     console.log(useMainnet);
     console.log(targetAddress);
 
-    // reset the primary and secondary tx result states
-    setPrimaryTxResult(null);
-    setSecondaryTxResult(null);
     if (
       (fromIcon && loginWallets.icon === null) ||
       (!fromIcon && loginWallets.bsc === null)
@@ -227,14 +238,17 @@ function Home() {
     }
   }
   async function dispatchSecondTx() {
+    console.log("dispatch second tx");
     if (typeof tokenToTransfer === "string") {
       const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
       const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
 
+      const chain = fromIcon ? "icon" : "bsc";
       const btpCoinName = lib.getBtpCoinName(tokenToTransfer, useMainnet);
       const query = await sdkMethods.transfer(
         btpCoinName,
         amountToTransfer,
+        chain,
         targetAddress,
         loginWallets.icon
       );
@@ -257,31 +271,35 @@ function Home() {
         if (payload.error == null) {
           txResult = await lib.getTxResult(payload.result, useMainnet);
         }
-
-        if (primaryTxResult === null) {
-          // set primaryTxResult
-          setPrimaryTxResult(txResult);
-
-          if (payload.error == null && txResult.failure == null) {
-            if (
-              (fromIcon && tokenToTransfer !== lib.tokenNames.icx) ||
-              (!fromIcon && tokenToTransfer !== lib.tokenNames.bnb)
-            ) {
-              // if the transaction originated on ICON and the token is not
-              // ICX or the transaction originated on BSC and the token is
-              // not BNB, initiate second transaction logic
-              dispatchSecondTx();
-            }
-          }
-        } else {
-          // set secondaryTxResult
-          setSecondaryTxResult(txResult);
-        }
+        setTempTxResult(txResult);
         break;
       case "CANCEL_JSON-RPC":
       default:
     }
   }
+
+  useEffect(() => {
+    if (tempTxResult != null) {
+      if (!waitingSecondTx.current) {
+        setPrimaryTxResult(tempTxResult);
+        if (tempTxResult.error == null && tempTxResult.failure == null) {
+          if (
+            (fromIcon && tokenToTransfer !== lib.tokenNames.icx) ||
+            (!fromIcon && tokenToTransfer !== lib.tokenNames.bnb)
+          ) {
+            // if the transaction originated on ICON and the token is not
+            // ICX or the transaction originated on BSC and the token is
+            // not BNB, initiate second transaction logic
+            dispatchSecondTx();
+            waitingSecondTx.current = true;
+          }
+        }
+      } else {
+        setSecondaryTxResult(tempTxResult);
+        waitingSecondTx.current = false;
+      }
+    }
+  }, [fromIcon, tokenToTransfer, tempTxResult]);
 
   useEffect(() => {
     if (targetAddress !== null) {
@@ -482,17 +500,17 @@ function TxModal({
           <>
             <p>Transferring ICON native token</p>
             <p>Pre approval transaction result:</p>
-            <TxResultComponent txResult={secondaryTxResult} />
-            <p>Main transaction result:</p>
             <TxResultComponent txResult={primaryTxResult} />
+            <p>Main transaction result:</p>
+            <TxResultComponent txResult={secondaryTxResult} />
           </>
         ) : (
           <>
             <p>transferring ICON wrapped token</p>
             <p>Pre approval transaction result:</p>
-            <TxResultComponent txResult={secondaryTxResult} />
-            <p>Main transaction result:</p>
             <TxResultComponent txResult={primaryTxResult} />
+            <p>Main transaction result:</p>
+            <TxResultComponent txResult={secondaryTxResult} />
           </>
         )
       ) : tokenToTransfer === lib.tokenNames.bnb ? (
