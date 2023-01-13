@@ -57,7 +57,6 @@ function Home() {
   const [primaryTxResult, setPrimaryTxResult] = useState<any>(null);
   const [secondaryTxResult, setSecondaryTxResult] = useState<any>(null);
   const [loginWallets, setLoginWallets] = useState(WALLETS_INIT);
-  const [firstTxResult, setFirstTxResult] = useState<any>(null);
 
   // FOR TESTING
   lib.useTraceUpdate(
@@ -153,7 +152,6 @@ function Home() {
     // reset the primary and secondary tx result states
     setPrimaryTxResult(null);
     setSecondaryTxResult(null);
-    setFirstTxResult(null);
     if (
       (fromIcon && loginWallets.icon === null) ||
       (!fromIcon && loginWallets.bsc === null)
@@ -228,72 +226,62 @@ function Home() {
       setTargetAddress(evnt.target.value);
     }
   }
+  async function dispatchSecondTx() {
+    if (typeof tokenToTransfer === "string") {
+      const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
+      const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
 
-  function handleIconWalletResponse(evnt: any) {
+      const btpCoinName = lib.getBtpCoinName(tokenToTransfer, useMainnet);
+      const query = await sdkMethods.transfer(
+        btpCoinName,
+        amountToTransfer,
+        targetAddress,
+        loginWallets.icon
+      );
+      console.log("second query");
+      console.log(query);
+      dispatchTxEvent(query);
+    }
+  }
+
+  async function handleIconWalletResponse(evnt: any) {
     const { type, payload } = evnt.detail;
+    console.log("event response");
+    console.log(type);
+    console.log(payload);
 
     // switch case for every type of event raised
     switch (type) {
       case "RESPONSE_JSON-RPC":
+        let txResult = payload;
+        if (payload.error == null) {
+          txResult = await lib.getTxResult(payload.result, useMainnet);
+        }
+
         if (primaryTxResult === null) {
-          setPrimaryTxResult(payload);
+          // set primaryTxResult
+          setPrimaryTxResult(txResult);
+
+          if (payload.error == null && txResult.failure == null) {
+            if (
+              (fromIcon && tokenToTransfer !== lib.tokenNames.icx) ||
+              (!fromIcon && tokenToTransfer !== lib.tokenNames.bnb)
+            ) {
+              // if the transaction originated on ICON and the token is not
+              // ICX or the transaction originated on BSC and the token is
+              // not BNB, initiate second transaction logic
+              dispatchSecondTx();
+            }
+          }
         } else {
-          setSecondaryTxResult(payload);
+          // set secondaryTxResult
+          setSecondaryTxResult(txResult);
         }
         break;
       case "CANCEL_JSON-RPC":
       default:
     }
   }
-
-  useEffect(() => {
-    async function dispatchSecondTx() {
-      if (typeof tokenToTransfer === "string") {
-        const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
-        const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
-
-        const btpCoinName = lib.getBtpCoinName(tokenToTransfer, useMainnet);
-        const query = await sdkMethods.transfer(
-          btpCoinName,
-          amountToTransfer,
-          targetAddress,
-          loginWallets.icon
-        );
-        console.log("second query");
-        console.log(query);
-        dispatchTxEvent(query);
-      }
-    }
-
-    async function checkFirstTxAndDispatchSecondTx() {
-      const txResult = await lib.getTxResult(
-        primaryTxResult.result,
-        useMainnet
-      );
-
-      // validate here the result of getTxResult
-      // if the last tx resulted in error dont execute
-      // the second tx.
-      if (txResult != null && txResult.failure == null) {
-        await dispatchSecondTx();
-      }
-    }
-
-    if (primaryTxResult != null && tokenToTransfer != null) {
-      if (fromIcon && tokenToTransfer !== lib.tokenNames.icx) {
-        // if the originating chain is ICON and the token to transfer is not
-        // ICX.  Dispatch the second tx.
-
-        if (primaryTxResult.error != null) {
-          setSecondaryTxResult({ error: "Pre approval tx failed" });
-        } else {
-          checkFirstTxAndDispatchSecondTx();
-        }
-      } else if (!fromIcon && tokenToTransfer !== lib.tokenNames.bnb) {
-        // if the originating chain is BSC and the token to transfer is not BNB
-      }
-    }
-  }, [primaryTxResult, useMainnet, fromIcon, tokenToTransfer]);
 
   useEffect(() => {
     if (targetAddress !== null) {
@@ -527,12 +515,25 @@ type TxResultComponentType = {
 };
 
 function TxResultComponent({ txResult }: TxResultComponentType) {
+  console.log("txResult");
+  console.log(txResult);
+  let message = "ERROR";
+
+  if (txResult != null) {
+    if (txResult.error != null || txResult.failure != null) {
+      message = txResult.error == null ? txResult.failure : txResult.error;
+    } else {
+      message = txResult.txHash;
+    }
+  }
+
+  const parsedMessage = JSON.stringify(message);
   return txResult === null ? (
     <p>waiting...</p>
   ) : txResult.error != null ? (
-    <p>Error response from chain: {txResult.error}</p>
+    <p>Error response from chain: {parsedMessage}</p>
   ) : (
-    <p>Tx hash result: {txResult.result}</p>
+    <p>Tx hash result: {parsedMessage}</p>
   );
 }
 export default Home;
