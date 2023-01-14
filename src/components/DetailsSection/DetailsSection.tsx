@@ -1,18 +1,17 @@
 import { useState } from "react";
 import { Hr } from "../miscItems/miscItems";
 import styles from "./DetailsSection.module.css";
+import { WALLETS_INIT } from "../../helpers/helpers";
 
 type DetailsSectionType = {
-  iconWallet: string | null;
+  wallets: typeof WALLETS_INIT;
   iconWalletDetails: any;
-  bscWallet: string | null;
   bscWalletDetails: any;
 };
 
 export default function DetailsSection({
-  iconWallet,
+  wallets,
   iconWalletDetails,
-  bscWallet,
   bscWalletDetails
 }: DetailsSectionType) {
   const [isOpen, setIsOpen] = useState(false);

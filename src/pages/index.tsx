@@ -6,7 +6,7 @@ import DetailsSection from "../components/DetailsSection/DetailsSection";
 import Head from "next/head";
 import lib from "../lib/lib";
 import GenericModal from "../components/GenericModal/genericModal";
-import { WALLETS_INIT, helpers } from "./helpers";
+import { WALLETS_INIT, helpers } from "../helpers/helpers";
 
 type Tokens = typeof lib.tokens[number];
 
@@ -308,9 +308,8 @@ function Home() {
         <div className={styles.container}>
           <div className={styles.card}>
             <DetailsSection
-              iconWallet={loginWallets.icon}
+              wallets={loginWallets}
               iconWalletDetails={"string2"}
-              bscWallet={loginWallets.bsc}
               bscWalletDetails={"string4"}
             />
           </div>
