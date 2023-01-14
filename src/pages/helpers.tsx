@@ -5,28 +5,13 @@ import IconBridgeSDK from "@espanicon/icon-bridge-sdk-js";
 const sdkTestnet = new IconBridgeSDK({ useMainnet: false });
 const sdkMainnet = new IconBridgeSDK({ useMainnet: true });
 
-const WALLETS_INIT: {
+export const WALLETS_INIT: {
   icon?: null | string;
   bsc?: null | string;
 } = {
   icon: null,
   bsc: null
 };
-
-type Tokens = typeof lib.tokens[number];
-
-const TOKENS_AVAILABLE: Partial<typeof lib.tokens> = [
-  lib.tokenNames.icx,
-  // lib.tokenNames.sicx,
-  lib.tokenNames.bnb
-  // lib.tokenNames.btcb,
-  // lib.tokenNames.eth,
-  // lib.tokenNames.bnusd,
-  // lib.tokenNames.busd,
-  // lib.tokenNames.usdt,
-  // lib.tokenNames.usdc
-  // lib.tokenNames.icz
-];
 
 function dispatchTxEvent(txData: any) {
   window.dispatchEvent(
@@ -39,7 +24,7 @@ function dispatchTxEvent(txData: any) {
   );
 }
 
-export function handleWalletsChange(
+function handleWalletsChange(
   wallets: typeof WALLETS_INIT,
   setLoginWallets: Dispatch<typeof WALLETS_INIT>
 ) {
@@ -52,7 +37,7 @@ function resetTxStates(setPrimaryTxResult: any, setSecondaryTxResult: any) {
   setSecondaryTxResult(null);
 }
 
-export function handleModalClose(
+function handleModalClose(
   setIsModalOpen: any,
   setPrimaryTxResult: any,
   setSecondaryTxResult: any
@@ -61,7 +46,7 @@ export function handleModalClose(
   resetTxStates(setPrimaryTxResult, setSecondaryTxResult);
 }
 
-export function handleOnChainFromIcon(
+function handleOnChainFromIcon(
   evnt: any,
   setPrimaryTxResult: any,
   setSecondaryTxResult: any,
@@ -81,7 +66,7 @@ export function handleOnChainFromIcon(
   }
 }
 
-export function handleOnChainFromBsc(evnt: any, setFromIcon: any) {
+function handleOnChainFromBsc(evnt: any, setFromIcon: any) {
   switch (evnt.target.value) {
     case "icon":
       setFromIcon(false);
@@ -93,7 +78,7 @@ export function handleOnChainFromBsc(evnt: any, setFromIcon: any) {
   }
 }
 
-export function handleTokenSelection(
+function handleTokenSelection(
   evnt: any,
   setPrimaryTxResult: any,
   setSecondaryTxResult: any,
@@ -105,10 +90,7 @@ export function handleTokenSelection(
   setTokenToTransfer(evnt.target.value);
 }
 
-export function handleAmountToTransferChange(
-  evnt: any,
-  setAmountToTransfer: any
-) {
+function handleAmountToTransferChange(evnt: any, setAmountToTransfer: any) {
   const valueArr = evnt.target.value.split(".");
   const result = [];
   for (let each = 0; each < 2; each++) {
@@ -121,7 +103,7 @@ export function handleAmountToTransferChange(
   setAmountToTransfer(parsed);
 }
 
-export function handleOnNetworkChange(evnt: any, setUseMainnet: any) {
+function handleOnNetworkChange(evnt: any, setUseMainnet: any) {
   switch (evnt.target.value) {
     case "testnet":
       setUseMainnet(false);
@@ -133,7 +115,7 @@ export function handleOnNetworkChange(evnt: any, setUseMainnet: any) {
   }
 }
 
-export async function handleOnTransfer(
+async function handleOnTransfer(
   fromIcon: any,
   loginWallets: any,
   targetStatus: any,
@@ -219,7 +201,7 @@ export async function handleOnTransfer(
   setIsModalOpen(true);
 }
 
-export function handleOnTargetAddressChange(evnt: any, setTargetAddress: any) {
+function handleOnTargetAddressChange(evnt: any, setTargetAddress: any) {
   const regex = /^[A-Za-z0-9]*$/;
 
   if (evnt.target.value.match(regex)) {
@@ -227,7 +209,7 @@ export function handleOnTargetAddressChange(evnt: any, setTargetAddress: any) {
   }
 }
 
-export async function dispatchSecondTx(
+async function dispatchSecondTx(
   tokenToTransfer: any,
   fromIcon: boolean,
   useMainnet: boolean,
@@ -255,26 +237,16 @@ export async function dispatchSecondTx(
   }
 }
 
-export async function handleIconWalletResponse(
-  evnt: any,
-  useMainnet: boolean,
-  setTempTxResult: any
-) {
-  const { type, payload } = evnt.detail;
-  console.log("event response");
-  console.log(type);
-  console.log(payload);
-
-  // switch case for every type of event raised
-  switch (type) {
-    case "RESPONSE_JSON-RPC":
-      let txResult = payload;
-      if (payload.error == null) {
-        txResult = await lib.getTxResult(payload.result, useMainnet);
-      }
-      setTempTxResult(txResult);
-      break;
-    case "CANCEL_JSON-RPC":
-    default:
-  }
-}
+export const helpers = {
+  dispatchTxEvent,
+  handleWalletsChange,
+  handleModalClose,
+  handleOnChainFromIcon,
+  handleOnChainFromBsc,
+  handleTokenSelection,
+  handleAmountToTransferChange,
+  handleOnNetworkChange,
+  handleOnTransfer,
+  handleOnTargetAddressChange,
+  dispatchSecondTx
+};

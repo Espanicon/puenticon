@@ -5,19 +5,8 @@ import WalletSelect from "../components/WalletSelect/WalletSelect";
 import DetailsSection from "../components/DetailsSection/DetailsSection";
 import Head from "next/head";
 import lib from "../lib/lib";
-import IconBridgeSDK from "@espanicon/icon-bridge-sdk-js";
 import GenericModal from "../components/GenericModal/genericModal";
-
-const sdkTestnet = new IconBridgeSDK({ useMainnet: false });
-const sdkMainnet = new IconBridgeSDK({ useMainnet: true });
-
-const WALLETS_INIT: {
-  icon?: null | string;
-  bsc?: null | string;
-} = {
-  icon: null,
-  bsc: null
-};
+import { WALLETS_INIT, helpers } from "./helpers";
 
 type Tokens = typeof lib.tokens[number];
 
@@ -33,17 +22,6 @@ const TOKENS_AVAILABLE: Partial<typeof lib.tokens> = [
   // lib.tokenNames.usdc
   // lib.tokenNames.icz
 ];
-
-function dispatchTxEvent(txData: any) {
-  window.dispatchEvent(
-    new CustomEvent("ICONEX_RELAY_REQUEST", {
-      detail: {
-        type: "REQUEST_JSON-RPC",
-        payload: txData
-      }
-    })
-  );
-}
 
 function Home() {
   const [fromIcon, setFromIcon] = useState<boolean>(true);
@@ -78,185 +56,56 @@ function Home() {
     },
     "Home"
   );
-  //
 
   function handleWalletsChange(wallets: typeof WALLETS_INIT) {
-    setLoginWallets(state => {
-      return { ...state, ...wallets };
-    });
+    return helpers.handleWalletsChange(wallets, setLoginWallets);
   }
-
   function handleModalClose() {
-    setIsModalOpen(false);
-    // reset the primary and secondary tx result states
-    setPrimaryTxResult(null);
-    setSecondaryTxResult(null);
+    return helpers.handleModalClose(
+      setIsModalOpen,
+      setPrimaryTxResult,
+      setSecondaryTxResult
+    );
   }
-
   function handleOnChainFromIcon(evnt: any) {
-    // reset the primary and secondary tx result states
-    setPrimaryTxResult(null);
-    setSecondaryTxResult(null);
-
-    switch (evnt.target.value) {
-      case "icon":
-        setFromIcon(true);
-        break;
-      case "bsc":
-        setFromIcon(false);
-        break;
-      default:
-    }
+    return helpers.handleOnChainFromIcon(
+      evnt,
+      setPrimaryTxResult,
+      setSecondaryTxResult,
+      setFromIcon
+    );
   }
-
   function handleOnChainFromBsc(evnt: any) {
-    switch (evnt.target.value) {
-      case "icon":
-        setFromIcon(false);
-        break;
-      case "bsc":
-        setFromIcon(true);
-        break;
-      default:
-    }
+    return helpers.handleOnChainFromBsc(evnt, setFromIcon);
   }
-
   function handleTokenSelection(evnt: any) {
-    // reset the primary and secondary tx result states
-    setPrimaryTxResult(null);
-    setSecondaryTxResult(null);
-
-    setTokenToTransfer(evnt.target.value);
+    return helpers.handleTokenSelection(
+      evnt,
+      setPrimaryTxResult,
+      setSecondaryTxResult,
+      setTokenToTransfer
+    );
   }
-
   function handleAmountToTransferChange(evnt: any) {
-    const valueArr = evnt.target.value.split(".");
-    const result = [];
-    for (let each = 0; each < 2; each++) {
-      if (valueArr[each] != null) {
-        result.push(valueArr[each].replace(/\D/, ""));
-      }
-    }
-
-    const parsed = result.join(".");
-    setAmountToTransfer(parsed);
+    helpers.handleAmountToTransferChange(evnt, setAmountToTransfer);
   }
-
   function handleOnNetworkChange(evnt: any) {
-    switch (evnt.target.value) {
-      case "testnet":
-        setUseMainnet(false);
-        break;
-      case "mainnet":
-        setUseMainnet(true);
-        break;
-      default:
-    }
+    return helpers.handleOnNetworkChange(evnt, setUseMainnet);
   }
-
   async function handleOnTransfer() {
-    // TODO:
-    console.log("transfer");
-    console.log(loginWallets);
-    console.log(fromIcon);
-    console.log(tokenToTransfer);
-    console.log(amountToTransfer);
-    console.log(useMainnet);
-    console.log(targetAddress);
-
-    if (
-      (fromIcon && loginWallets.icon === null) ||
-      (!fromIcon && loginWallets.bsc === null)
-    ) {
-      alert("Invalid source wallet");
-      return;
-    }
-    if (!targetStatus) {
-      alert("invalid target address");
-      return;
-    } else {
-      const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
-      const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
-      let query: any = null;
-
-      if (fromIcon) {
-        // if originating chain is ICON
-        if (tokenToTransfer === lib.tokenNames.icx) {
-          // if token to transfer is ICX. use 'transferNativeCoin' method
-          // of btp contract.
-          query = await sdkMethods.transferNativeCoin(
-            targetAddress, // target bsc wallet address
-            "bsc", // target chain
-            loginWallets.icon, // originating icon wallet address
-            amountToTransfer // amount
-          );
-        } else {
-          const contractAddress = useMainnet
-            ? lib.contracts.icon[tokenToTransfer]!.mainnet
-            : lib.contracts.icon[tokenToTransfer]!.testnet;
-          console.log("token contract");
-          console.log(contractAddress);
-
-          if (lib.iconTokens.native.includes(tokenToTransfer)) {
-            // if token to transfer is a native ICON token, the proccess
-            // requires 2 transfers. The first one is to transfer the amount
-            // of tokens to the BTP contract and then the second one is to call
-            // the 'transfer' method of the BTP contract.
-
-            query = await sdkMethods.transferToBTSContract(
-              amountToTransfer,
-              contractAddress,
-              loginWallets.icon
-            );
-          } else if (lib.iconTokens.wrapped.includes(tokenToTransfer)) {
-            // if the token to transfer is an ICON wrapped token the proccess
-            // requires 2 tx. the first tx is to call the 'approve' method of
-            // the token contract and approve the BTP contract for the required
-            // amount and the second tx is to call the 'transfer' method of the
-            // btp contract.
-
-            query = await sdkMethods.approveBTSContract(
-              amountToTransfer,
-              contractAddress,
-              loginWallets.icon
-            );
-          }
-        }
-
-        console.log("first query");
-        console.log(query);
-        dispatchTxEvent(query);
-      }
-    }
-    setIsModalOpen(true);
+    return await helpers.handleOnTransfer(
+      fromIcon,
+      loginWallets,
+      targetStatus,
+      tokenToTransfer,
+      amountToTransfer,
+      useMainnet,
+      targetAddress,
+      setIsModalOpen
+    );
   }
-
   function handleOnTargetAddressChange(evnt: any) {
-    const regex = /^[A-Za-z0-9]*$/;
-
-    if (evnt.target.value.match(regex)) {
-      setTargetAddress(evnt.target.value);
-    }
-  }
-  async function dispatchSecondTx() {
-    console.log("dispatch second tx");
-    if (typeof tokenToTransfer === "string") {
-      const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
-      const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
-
-      const chain = fromIcon ? "icon" : "bsc";
-      const btpCoinName = lib.getBtpCoinName(tokenToTransfer, useMainnet);
-      const query = await sdkMethods.transfer(
-        btpCoinName,
-        amountToTransfer,
-        chain,
-        targetAddress,
-        loginWallets.icon
-      );
-      console.log("second query");
-      console.log(query);
-      dispatchTxEvent(query);
-    }
+    return helpers.handleOnTargetAddressChange(evnt, setTargetAddress);
   }
 
   async function handleIconWalletResponse(evnt: any) {
@@ -299,7 +148,14 @@ function Home() {
             // if the transaction originated on ICON and the token is not
             // ICX or the transaction originated on BSC and the token is
             // not BNB, initiate second transaction logic
-            dispatchSecondTx();
+            helpers.dispatchSecondTx(
+              tokenToTransfer,
+              fromIcon,
+              useMainnet,
+              amountToTransfer,
+              targetAddress,
+              loginWallets
+            );
             waitingSecondTx.current = true;
           }
         }
