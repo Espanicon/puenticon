@@ -2,17 +2,20 @@ import { useState } from "react";
 import { Hr } from "../miscItems/miscItems";
 import styles from "./DetailsSection.module.css";
 import { WALLETS_INIT } from "../../helpers/helpers";
+import TokenTable from "../TokenTable/TokenTable";
 
 type DetailsSectionType = {
   wallets: typeof WALLETS_INIT;
   iconWalletDetails: any;
   bscWalletDetails: any;
+  handleTokenToRefund: any;
 };
 
 export default function DetailsSection({
   wallets,
   iconWalletDetails,
-  bscWalletDetails
+  bscWalletDetails,
+  handleTokenToRefund
 }: DetailsSectionType) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -50,7 +53,11 @@ export default function DetailsSection({
       </div>
       <Hr />
       <div className={styles.body}>
-        <p>Paragraph test</p>
+        <TokenTable
+          tableLabel="ICON"
+          tokens={iconWalletDetails}
+          handleTokenToRefund={handleTokenToRefund}
+        />
       </div>
     </div>
   );

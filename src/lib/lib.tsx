@@ -218,7 +218,7 @@ function sleep(time = 1000): Promise<void> {
 }
 
 function getBtpCoinName(tokenLabel: string, useMainnet: boolean) {
-  let coinName: null | string = null;
+  let coinName: string = "";
   if (useMainnet) {
     switch (tokenLabel) {
       case tokenNames.icx:

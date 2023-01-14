@@ -23,6 +23,18 @@ const TOKENS_AVAILABLE: Partial<typeof lib.tokens> = [
   // lib.tokenNames.icz
 ];
 
+const iconInitTokenBalance = TOKENS_AVAILABLE.map(tokenName => {
+  return {
+    token: tokenName,
+    balance: {
+      locked: "0",
+      refundable: "0",
+      usable: "0",
+      userBalance: "0"
+    }
+  };
+});
+
 function Home() {
   const [fromIcon, setFromIcon] = useState<boolean>(true);
   const [tokenToTransfer, setTokenToTransfer] = useState<Tokens>(
@@ -37,6 +49,9 @@ function Home() {
   const [secondaryTxResult, setSecondaryTxResult] = useState<any>(null);
   const [loginWallets, setLoginWallets] = useState(WALLETS_INIT);
   const [tempTxResult, setTempTxResult] = useState<any>(null);
+  const [iconTokensBalance, setIconTokenBalance] = useState<
+    typeof iconInitTokenBalance
+  >(iconInitTokenBalance);
 
   const waitingSecondTx = useRef(false);
 
@@ -108,6 +123,11 @@ function Home() {
     return helpers.handleOnTargetAddressChange(evnt, setTargetAddress);
   }
 
+  function handleTokenToRefund(token: string) {
+    // TODO
+    console.log(token);
+  }
+
   async function handleIconWalletResponse(evnt: any) {
     const { type, payload } = evnt.detail;
     console.log("event response");
@@ -130,7 +150,12 @@ function Home() {
 
   useEffect(() => {
     if (loginWallets.icon != null) {
-      //
+      helpers.getTokensBalance(
+        loginWallets,
+        useMainnet,
+        TOKENS_AVAILABLE,
+        setIconTokenBalance
+      );
     } else if (loginWallets.bsc != null) {
       //
     }
@@ -309,8 +334,9 @@ function Home() {
           <div className={styles.card}>
             <DetailsSection
               wallets={loginWallets}
-              iconWalletDetails={"string2"}
+              iconWalletDetails={iconTokensBalance}
               bscWalletDetails={"string4"}
+              handleTokenToRefund={handleTokenToRefund}
             />
           </div>
         </div>

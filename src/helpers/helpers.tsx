@@ -115,6 +115,45 @@ function handleOnNetworkChange(evnt: any, setUseMainnet: any) {
   }
 }
 
+type QueryType = {
+  jsonrpc: string;
+  error?: any;
+  result?: any;
+};
+
+async function getTokensBalance(
+  loginWallets: any,
+  useMainnet: any,
+  arrOfTokens: Partial<typeof lib.tokens>,
+  callback: any
+) {
+  const wallet = loginWallets.icon;
+  const localSdk = useMainnet ? sdkMainnet.icon : sdkTestnet.icon;
+  const result = [];
+  for (const token of arrOfTokens) {
+    if (token != null) {
+      const tokenLabel = lib.getBtpCoinName(token, useMainnet);
+      const query = ((await localSdk.methods.balanceOf(
+        wallet,
+        tokenLabel
+      )) as unknown) as QueryType;
+      if (query != null) {
+        const arrBalances = Object.keys(query.result);
+        const parsedBalances: {
+          [key: string]: any;
+        } = {};
+        for (const typeOfBalance of arrBalances) {
+          const rawBalance =
+            parseInt(query.result[typeOfBalance], 16) / 10 ** 18;
+          parsedBalances[typeOfBalance] = rawBalance;
+        }
+        result.push({ token: tokenLabel, balance: { ...parsedBalances } });
+      }
+    }
+  }
+  callback(result);
+}
+
 async function handleOnTransfer(
   fromIcon: any,
   loginWallets: any,
@@ -248,5 +287,6 @@ export const helpers = {
   handleOnNetworkChange,
   handleOnTransfer,
   handleOnTargetAddressChange,
-  dispatchSecondTx
+  dispatchSecondTx,
+  getTokensBalance
 };
