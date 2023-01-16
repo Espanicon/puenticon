@@ -1,15 +1,29 @@
 import { useState, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import styles from "./index.module.css";
 import { Hr } from "../components/miscItems/miscItems";
 import WalletSelect from "../components/WalletSelect/WalletSelect";
-import DetailsSection from "../components/DetailsSection/DetailsSection";
+// import DetailsSection from "../components/DetailsSection/DetailsSection";
 import Head from "next/head";
 import lib from "../lib/lib";
 import GenericModal from "../components/GenericModal/genericModal";
 import { WALLETS_INIT, helpers } from "../helpers/helpers";
 
+// DetailsSection imported with Next.js dynamic imports functionality
+// and no SSR to allow for the component to use native web browser API
+// from the global 'Window' object without Next.js throwing and error
+// when trying to access it on the backend
+const DetailsSection = dynamic(
+  () => import("../components/DetailsSection/DetailsSection"),
+  { ssr: false }
+);
+
+// type declarations
 type Tokens = typeof lib.tokens[number];
 
+type TxType = "" | "transfer" | "methodCall" | "reclaimCall";
+
+// variable declarations
 const TOKENS_AVAILABLE: Partial<typeof lib.tokens> = [
   lib.tokenNames.icx,
   // lib.tokenNames.sicx,
@@ -35,6 +49,7 @@ const iconInitTokenBalance = TOKENS_AVAILABLE.map(tokenName => {
   };
 });
 
+// main component
 function Home() {
   const [fromIcon, setFromIcon] = useState<boolean>(true);
   const [tokenToTransfer, setTokenToTransfer] = useState<Tokens>(
@@ -54,6 +69,7 @@ function Home() {
   >(iconInitTokenBalance);
 
   const waitingSecondTx = useRef(false);
+  const txFlag = useRef<TxType>("");
 
   // FOR TESTING
   lib.useTraceUpdate(
@@ -108,24 +124,37 @@ function Home() {
     return helpers.handleOnNetworkChange(evnt, setUseMainnet);
   }
   async function handleOnTransfer() {
-    return await helpers.handleOnTransfer(
+    const result = await helpers.handleOnTransfer(
       fromIcon,
       loginWallets,
       targetStatus,
       tokenToTransfer,
       amountToTransfer,
       useMainnet,
-      targetAddress,
-      setIsModalOpen
+      targetAddress
     );
+    if (result != null) {
+      txFlag.current = "transfer";
+      helpers.dispatchTxEvent(result);
+      setIsModalOpen(true);
+    }
   }
   function handleOnTargetAddressChange(evnt: any) {
     return helpers.handleOnTargetAddressChange(evnt, setTargetAddress);
   }
 
-  function handleTokenToRefund(token: string) {
+  async function handleTokenToRefund(token: {
+    token: string;
+    label: string;
+    balance: { refundable: string };
+  }) {
     // TODO
-    console.log(token);
+    const queryObj = await helpers.refundIconTokenBalance(
+      loginWallets,
+      useMainnet,
+      token
+    );
+    console.log(queryObj);
   }
 
   async function handleIconWalletResponse(evnt: any) {
@@ -141,6 +170,20 @@ function Home() {
         if (payload.error == null) {
           txResult = await lib.getTxResult(payload.result, useMainnet);
         }
+        switch (txFlag.current) {
+          case "":
+            break;
+          case "transfer":
+            setPrimaryTxResult(txResult);
+            break;
+          case "methodCall":
+            setSecondaryTxResult(txResult);
+            break;
+          case "reclaimCall":
+            break;
+          default:
+        }
+        txFlag.current = "";
         setTempTxResult(txResult);
         break;
       case "CANCEL_JSON-RPC":
@@ -150,7 +193,7 @@ function Home() {
 
   useEffect(() => {
     if (loginWallets.icon != null) {
-      helpers.getTokensBalance(
+      helpers.getIconTokensBalance(
         loginWallets,
         useMainnet,
         TOKENS_AVAILABLE,
@@ -173,6 +216,7 @@ function Home() {
             // if the transaction originated on ICON and the token is not
             // ICX or the transaction originated on BSC and the token is
             // not BNB, initiate second transaction logic
+            txFlag.current = "methodCall";
             helpers.dispatchSecondTx(
               tokenToTransfer,
               fromIcon,
@@ -186,6 +230,7 @@ function Home() {
         }
       } else {
         setSecondaryTxResult(tempTxResult);
+        txFlag.current = "";
         waitingSecondTx.current = false;
       }
     }
@@ -328,16 +373,14 @@ function Home() {
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-        <div className={styles.container}>
-          <div className={styles.card}>
-            <DetailsSection
-              wallets={loginWallets}
-              iconWalletDetails={iconTokensBalance}
-              bscWalletDetails={"string4"}
-              handleTokenToRefund={handleTokenToRefund}
-            />
+            <div className={styles.card}>
+              <DetailsSection
+                wallets={loginWallets}
+                iconWalletDetails={iconTokensBalance}
+                bscWalletDetails={"string4"}
+                handleTokenToRefund={handleTokenToRefund}
+              />
+            </div>
           </div>
         </div>
       </main>

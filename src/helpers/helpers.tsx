@@ -2,6 +2,37 @@ import { Dispatch } from "react";
 import lib from "../lib/lib";
 import IconBridgeSDK from "@espanicon/icon-bridge-sdk-js";
 
+// type declarations
+type QueryType = {
+  jsonrpc: string;
+  error?: any;
+  result?: any;
+};
+
+type JSONRPCType = {
+  jsonrpc: string;
+  method: string;
+  id: number;
+  params: {
+    to: string;
+    from?: string;
+    stepLimit?: string;
+    nid?: string;
+    nonce?: string;
+    version?: string;
+    timestamp?: string;
+    dataType: string;
+    value?: string;
+    data: {
+      method: string;
+      params?: {
+        [key: string]: string;
+      };
+    };
+  };
+};
+
+// variable declarations
 const sdkTestnet = new IconBridgeSDK({ useMainnet: false });
 const sdkMainnet = new IconBridgeSDK({ useMainnet: true });
 
@@ -13,6 +44,7 @@ export const WALLETS_INIT: {
   bsc: null
 };
 
+// functions
 function dispatchTxEvent(txData: any) {
   window.dispatchEvent(
     new CustomEvent("ICONEX_RELAY_REQUEST", {
@@ -115,13 +147,30 @@ function handleOnNetworkChange(evnt: any, setUseMainnet: any) {
   }
 }
 
-type QueryType = {
-  jsonrpc: string;
-  error?: any;
-  result?: any;
-};
+async function refundIconTokenBalance(
+  loginWallets: any,
+  useMainnet: any,
+  tokenData: { token: string; label: string; balance: { refundable: string } }
+  // callback: any
+) {
+  const wallet = loginWallets.icon;
+  const localSdk = useMainnet ? sdkMainnet.icon : sdkTestnet.icon;
+  const tokenLabel = lib.getBtpCoinName(tokenData.token, useMainnet);
+  console.log("token label");
+  console.log(tokenLabel);
+  console.log(tokenData);
+  const refundableBalance =
+    parseInt(tokenData.balance.refundable, 16) / 10 ** 18;
+  const queryObj = await localSdk.web.reclaim(
+    tokenLabel,
+    refundableBalance,
+    wallet
+  );
 
-async function getTokensBalance(
+  return queryObj;
+}
+
+async function getIconTokensBalance(
   loginWallets: any,
   useMainnet: any,
   arrOfTokens: Partial<typeof lib.tokens>,
@@ -147,7 +196,11 @@ async function getTokensBalance(
             parseInt(query.result[typeOfBalance], 16) / 10 ** 18;
           parsedBalances[typeOfBalance] = rawBalance;
         }
-        result.push({ token: tokenLabel, balance: { ...parsedBalances } });
+        result.push({
+          token: token,
+          label: tokenLabel,
+          balance: { ...parsedBalances }
+        });
       }
     }
   }
@@ -161,17 +214,10 @@ async function handleOnTransfer(
   tokenToTransfer: any,
   amountToTransfer: any,
   useMainnet: any,
-  targetAddress: any,
-  setIsModalOpen: any
+  targetAddress: any
 ) {
   // TODO:
-  console.log("transfer");
-  console.log(loginWallets);
-  console.log(fromIcon);
-  console.log(tokenToTransfer);
-  console.log(amountToTransfer);
-  console.log(useMainnet);
-  console.log(targetAddress);
+  let query: null | JSONRPCType = null;
 
   if (
     (fromIcon && loginWallets.icon === null) ||
@@ -186,7 +232,6 @@ async function handleOnTransfer(
   } else {
     const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
     const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
-    let query: any = null;
 
     if (fromIcon) {
       // if originating chain is ICON
@@ -231,13 +276,11 @@ async function handleOnTransfer(
           );
         }
       }
-
-      console.log("first query");
-      console.log(query);
-      dispatchTxEvent(query);
+    } else {
+      // if !fromIcon
     }
   }
-  setIsModalOpen(true);
+  return query;
 }
 
 function handleOnTargetAddressChange(evnt: any, setTargetAddress: any) {
@@ -288,5 +331,6 @@ export const helpers = {
   handleOnTransfer,
   handleOnTargetAddressChange,
   dispatchSecondTx,
-  getTokensBalance
+  getIconTokensBalance,
+  refundIconTokenBalance
 };

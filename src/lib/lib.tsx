@@ -41,6 +41,18 @@ const tokenNames = {
   icz: "ICZ"
 };
 
+const btpTokenNames = {
+  icx: ["btp-0x1.icon-ICX", "btp-0x2.icon-ICX"],
+  sicx: ["btp-0x1.icon-sICX", "btp-0x2.icon-sICX"],
+  bnb: ["btp-0x38.bsc-BNB", "btp-0x61.bsc-BNB"],
+  btcb: ["btp-0x38.bsc-BTCB", "btp-0x61.bsc-BTCB"],
+  eth: ["btp-0x38.bsc-ETH", "btp-0x61.bsc-ETH"],
+  bnusd: ["btp-0x1.icon-bnUSD", "btp-0x2.icon-bnUSD"],
+  busd: ["btp-0x38.bsc-BUSD", "btp-0x61.bsc-BUSD"],
+  usdt: ["btp-0x38.bsc-USDT", "btp-0x61.bsc-USDT"],
+  usdc: ["btp-0x38.bsc-USDC", "btp-0x61.bsc-USDC"]
+};
+
 const tokens = [...Object.values(tokenNames)] as const;
 
 const iconTokens = {
@@ -55,8 +67,6 @@ const iconTokens = {
     tokenNames.icz
   ]
 };
-
-const iconNativeTokens = [tokenNames.sicx, tokenNames.bnusd];
 
 const contracts = {
   icon: {
@@ -289,7 +299,6 @@ const lib = {
   tokenNames,
   iconTokens,
   tokens,
-  iconNativeTokens,
   contracts,
   isValidBscAddress,
   isValidIconAddress,

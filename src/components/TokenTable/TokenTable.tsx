@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import styles from "./TokenTable.module.css";
 
 type TokenType = {
@@ -18,6 +19,10 @@ export default function TokenTable({
   tokens,
   handleTokenToRefund
 }: TokenTableType) {
+  const tokensKeys = tokens.map(() => {
+    return crypto.randomUUID();
+  });
+
   function handleOnClick(token: string, refundable: number) {
     if (refundable > 0) {
       handleTokenToRefund(token);
@@ -37,9 +42,9 @@ export default function TokenTable({
           </tr>
         </thead>
         <tbody>
-          {tokens.map(eachToken => {
+          {tokens.map((eachToken, index) => {
             return (
-              <tr className={styles.tableRow}>
+              <tr className={styles.tableRow} key={tokensKeys[index]}>
                 <td>{eachToken.token}</td>
                 <td>{eachToken.balance.locked}</td>
                 <td>{eachToken.balance.refundable}</td>
@@ -49,10 +54,7 @@ export default function TokenTable({
                   <button
                     disabled={eachToken.balance.refundable! > 0 ? false : true}
                     onClick={() =>
-                      handleOnClick(
-                        eachToken.token,
-                        eachToken.balance.refundable!
-                      )
+                      handleOnClick(eachToken, eachToken.balance.refundable!)
                     }
                   >
                     Refund
