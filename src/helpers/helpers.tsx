@@ -217,18 +217,24 @@ async function handleOnTransfer(
   targetAddress: any
 ) {
   // TODO:
-  let query: null | JSONRPCType = null;
+  const result: {
+    query: null | JSONRPCType;
+    type: string;
+  } = {
+    query: null,
+    type: ""
+  };
 
   if (
     (fromIcon && loginWallets.icon === null) ||
     (!fromIcon && loginWallets.bsc === null)
   ) {
     alert("Invalid source wallet");
-    return;
+    return result;
   }
   if (!targetStatus) {
     alert("invalid target address");
-    return;
+    return result;
   } else {
     const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
     const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
@@ -238,18 +244,17 @@ async function handleOnTransfer(
       if (tokenToTransfer === lib.tokenNames.icx) {
         // if token to transfer is ICX. use 'transferNativeCoin' method
         // of btp contract.
-        query = await sdkMethods.transferNativeCoin(
+        result.query = await sdkMethods.transferNativeCoin(
           targetAddress, // target bsc wallet address
           "bsc", // target chain
           loginWallets.icon, // originating icon wallet address
           amountToTransfer // amount
         );
+        result.type = "transfer";
       } else {
         const contractAddress = useMainnet
           ? lib.contracts.icon[tokenToTransfer]!.mainnet
           : lib.contracts.icon[tokenToTransfer]!.testnet;
-        console.log("token contract");
-        console.log(contractAddress);
 
         if (lib.iconTokens.native.includes(tokenToTransfer)) {
           // if token to transfer is a native ICON token, the proccess
@@ -257,11 +262,12 @@ async function handleOnTransfer(
           // of tokens to the BTP contract and then the second one is to call
           // the 'transfer' method of the BTP contract.
 
-          query = await sdkMethods.transferToBTSContract(
+          result.query = await sdkMethods.transferToBTSContract(
             amountToTransfer,
             contractAddress,
             loginWallets.icon
           );
+          result.type = "methodCall";
         } else if (lib.iconTokens.wrapped.includes(tokenToTransfer)) {
           // if the token to transfer is an ICON wrapped token the proccess
           // requires 2 tx. the first tx is to call the 'approve' method of
@@ -269,18 +275,19 @@ async function handleOnTransfer(
           // amount and the second tx is to call the 'transfer' method of the
           // btp contract.
 
-          query = await sdkMethods.approveBTSContract(
+          result.query = await sdkMethods.approveBTSContract(
             amountToTransfer,
             contractAddress,
             loginWallets.icon
           );
+          result.type = "methodCall";
         }
       }
     } else {
       // if !fromIcon
     }
   }
-  return query;
+  return result;
 }
 
 function handleOnTargetAddressChange(evnt: any, setTargetAddress: any) {

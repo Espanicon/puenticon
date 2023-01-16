@@ -60,8 +60,8 @@ function Home() {
   const [targetAddress, setTargetAddress] = useState<string | null>(null);
   const [targetStatus, setTargetStatus] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [primaryTxResult, setPrimaryTxResult] = useState<any>(null);
-  const [secondaryTxResult, setSecondaryTxResult] = useState<any>(null);
+  const [transferTxResult, setTransferTxResult] = useState<any>(null);
+  const [methodCallTxResult, setMethodCallTxResult] = useState<any>(null);
   const [loginWallets, setLoginWallets] = useState(WALLETS_INIT);
   const [tempTxResult, setTempTxResult] = useState<any>(null);
   const [iconTokensBalance, setIconTokenBalance] = useState<
@@ -81,8 +81,8 @@ function Home() {
       targetAddress,
       targetStatus,
       isModalOpen,
-      primaryTxResult,
-      secondaryTxResult,
+      transferTxResult,
+      methodCallTxResult,
       loginWallets
     },
     "Home"
@@ -94,15 +94,15 @@ function Home() {
   function handleModalClose() {
     return helpers.handleModalClose(
       setIsModalOpen,
-      setPrimaryTxResult,
-      setSecondaryTxResult
+      setTransferTxResult,
+      setMethodCallTxResult
     );
   }
   function handleOnChainFromIcon(evnt: any) {
     return helpers.handleOnChainFromIcon(
       evnt,
-      setPrimaryTxResult,
-      setSecondaryTxResult,
+      setTransferTxResult,
+      setMethodCallTxResult,
       setFromIcon
     );
   }
@@ -112,8 +112,8 @@ function Home() {
   function handleTokenSelection(evnt: any) {
     return helpers.handleTokenSelection(
       evnt,
-      setPrimaryTxResult,
-      setSecondaryTxResult,
+      setTransferTxResult,
+      setMethodCallTxResult,
       setTokenToTransfer
     );
   }
@@ -133,9 +133,9 @@ function Home() {
       useMainnet,
       targetAddress
     );
-    if (result != null) {
-      txFlag.current = "transfer";
-      helpers.dispatchTxEvent(result);
+    if (result.query != null) {
+      txFlag.current = result.type;
+      helpers.dispatchTxEvent(result.query);
       setIsModalOpen(true);
     }
   }
@@ -174,17 +174,25 @@ function Home() {
           case "":
             break;
           case "transfer":
-            setPrimaryTxResult(txResult);
+            setTransferTxResult(txResult);
+            txFlag.current = "";
             break;
           case "methodCall":
-            setSecondaryTxResult(txResult);
+            setMethodCallTxResult(txResult);
+            txFlag.current = "transfer";
+            helpers.dispatchSecondTx(
+              tokenToTransfer,
+              fromIcon,
+              useMainnet,
+              amountToTransfer,
+              targetAddress,
+              loginWallets
+            );
             break;
           case "reclaimCall":
             break;
           default:
         }
-        txFlag.current = "";
-        setTempTxResult(txResult);
         break;
       case "CANCEL_JSON-RPC":
       default:
@@ -205,38 +213,6 @@ function Home() {
   }, [loginWallets]);
 
   useEffect(() => {
-    if (tempTxResult != null) {
-      if (!waitingSecondTx.current) {
-        setPrimaryTxResult(tempTxResult);
-        if (tempTxResult.error == null && tempTxResult.failure == null) {
-          if (
-            (fromIcon && tokenToTransfer !== lib.tokenNames.icx) ||
-            (!fromIcon && tokenToTransfer !== lib.tokenNames.bnb)
-          ) {
-            // if the transaction originated on ICON and the token is not
-            // ICX or the transaction originated on BSC and the token is
-            // not BNB, initiate second transaction logic
-            txFlag.current = "methodCall";
-            helpers.dispatchSecondTx(
-              tokenToTransfer,
-              fromIcon,
-              useMainnet,
-              amountToTransfer,
-              targetAddress,
-              loginWallets
-            );
-            waitingSecondTx.current = true;
-          }
-        }
-      } else {
-        setSecondaryTxResult(tempTxResult);
-        txFlag.current = "";
-        waitingSecondTx.current = false;
-      }
-    }
-  }, [fromIcon, tokenToTransfer, tempTxResult]);
-
-  useEffect(() => {
     if (targetAddress !== null) {
       if (
         (!fromIcon && lib.isValidIconAddress(targetAddress)) ||
@@ -251,8 +227,8 @@ function Home() {
 
   useEffect(() => {
     if (!isModalOpen) {
-      setPrimaryTxResult(null);
-      setSecondaryTxResult(null);
+      setTransferTxResult(null);
+      setMethodCallTxResult(null);
     }
   }, [isModalOpen]);
 
@@ -282,8 +258,8 @@ function Home() {
         onClickHandler={setIsModalOpen}
         fromIcon={fromIcon}
         tokenToTransfer={tokenToTransfer}
-        primaryTxResult={primaryTxResult}
-        secondaryTxResult={secondaryTxResult}
+        transferTxResult={transferTxResult}
+        methodCallTxResult={methodCallTxResult}
       />
       <main className={styles.main}>
         <div className={styles.networkSelection}>
@@ -416,8 +392,8 @@ type TxModalType = {
   onClickHandler: any;
   fromIcon: boolean;
   tokenToTransfer: string | undefined;
-  primaryTxResult: any;
-  secondaryTxResult: any;
+  transferTxResult: any;
+  methodCallTxResult: any;
 };
 
 function TxModal({
@@ -426,8 +402,8 @@ function TxModal({
   onClickHandler,
   fromIcon,
   tokenToTransfer,
-  primaryTxResult,
-  secondaryTxResult
+  transferTxResult,
+  methodCallTxResult
 }: TxModalType) {
   const header = fromIcon ? "ICON -> BSC" : "BSC -> ICON";
   return (
@@ -437,23 +413,23 @@ function TxModal({
         tokenToTransfer === lib.tokenNames.icx ? (
           <>
             <p>Transferring ICX from ICON to BSC</p>
-            <TxResultComponent txResult={primaryTxResult} />
+            <TxResultComponent txResult={transferTxResult} />
           </>
-        ) : lib.iconNativeTokens.includes(tokenToTransfer!) ? (
+        ) : lib.iconTokens.native.includes(tokenToTransfer!) ? (
           <>
             <p>Transferring ICON native token</p>
             <p>Pre approval transaction result:</p>
-            <TxResultComponent txResult={primaryTxResult} />
+            <TxResultComponent txResult={methodCallTxResult} />
             <p>Main transaction result:</p>
-            <TxResultComponent txResult={secondaryTxResult} />
+            <TxResultComponent txResult={transferTxResult} />
           </>
         ) : (
           <>
             <p>transferring ICON wrapped token</p>
             <p>Pre approval transaction result:</p>
-            <TxResultComponent txResult={primaryTxResult} />
+            <TxResultComponent txResult={methodCallTxResult} />
             <p>Main transaction result:</p>
-            <TxResultComponent txResult={secondaryTxResult} />
+            <TxResultComponent txResult={transferTxResult} />
           </>
         )
       ) : tokenToTransfer === lib.tokenNames.bnb ? (
