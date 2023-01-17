@@ -1,34 +1,31 @@
 import { useState, useEffect } from "react";
+import { TokenType, TokenTableType } from "../../types";
+import { LoadingComponent } from "../miscItems/miscItems";
 import styles from "./TokenTable.module.css";
 
-type TokenType = {
-  token: string;
-  balance: {
-    [key: string]: number;
-  };
-};
-
-type TokenTableType = {
-  tableLabel: any;
-  tokens: Array<TokenType>;
-  handleTokenToRefund: any;
-};
+function hexToDecimal(hex: string, decimals: number = 2) {
+  const result = parseInt(hex, 16) / 10 ** 18;
+  return result.toFixed(decimals);
+}
 
 export default function TokenTable({
   tableLabel,
   tokens,
   handleTokenToRefund
 }: TokenTableType) {
-  const tokensKeys = tokens.map(() => {
+  console.log("TokenTable tokens");
+  console.log(tokens);
+  const tokensKeys = tokens.map(eachToken => {
     return crypto.randomUUID();
   });
 
-  function handleOnClick(token: string, refundable: number) {
-    if (refundable > 0) {
+  function handleOnClick(token: TokenType, refundable: string) {
+    if (refundable != "0x0") {
       handleTokenToRefund(token);
     }
   }
 
+  console.log(tokens);
   return (
     <div className={styles.main}>
       <table className={styles.table}>
@@ -46,13 +43,18 @@ export default function TokenTable({
             return (
               <tr className={styles.tableRow} key={tokensKeys[index]}>
                 <td>{eachToken.token}</td>
-                <td>{eachToken.balance.locked}</td>
-                <td>{eachToken.balance.refundable}</td>
-                <td>{eachToken.balance.usable}</td>
-                <td>{eachToken.balance.userBalance}</td>
+                <td>{hexToDecimal(eachToken.balance.locked!)}</td>
+                <td>{hexToDecimal(eachToken.balance.refundable!)}</td>
+                <td>{hexToDecimal(eachToken.balance.usable!)}</td>
+                <td>{hexToDecimal(eachToken.balance.userBalance!)}</td>
                 <td>
                   <button
-                    disabled={eachToken.balance.refundable! > 0 ? false : true}
+                    disabled={
+                      eachToken.balance.refundable! === "0x0" ||
+                      eachToken.claiming === true
+                        ? true
+                        : false
+                    }
                     onClick={() =>
                       handleOnClick(eachToken, eachToken.balance.refundable!)
                     }
@@ -60,6 +62,7 @@ export default function TokenTable({
                     Refund
                   </button>
                 </td>
+                {eachToken.claiming ? <LoadingComponent /> : <></>}
               </tr>
             );
           })}

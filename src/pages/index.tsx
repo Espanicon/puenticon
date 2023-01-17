@@ -8,6 +8,14 @@ import Head from "next/head";
 import lib from "../lib/lib";
 import GenericModal from "../components/GenericModal/genericModal";
 import { WALLETS_INIT, helpers } from "../helpers/helpers";
+import {
+  Tokens,
+  TxType,
+  TokenType,
+  WalletsType,
+  ChainComponentType,
+  TxResultComponentType
+} from "../types";
 
 // DetailsSection imported with Next.js dynamic imports functionality
 // and no SSR to allow for the component to use native web browser API
@@ -17,11 +25,6 @@ const DetailsSection = dynamic(
   () => import("../components/DetailsSection/DetailsSection"),
   { ssr: false }
 );
-
-// type declarations
-type Tokens = typeof lib.tokens[number];
-
-type TxType = "" | "transfer" | "methodCall" | "reclaimCall";
 
 // variable declarations
 const TOKENS_AVAILABLE: Partial<typeof lib.tokens> = [
@@ -37,17 +40,21 @@ const TOKENS_AVAILABLE: Partial<typeof lib.tokens> = [
   // lib.tokenNames.icz
 ];
 
-const iconInitTokenBalance = TOKENS_AVAILABLE.map(tokenName => {
-  return {
-    token: tokenName,
-    balance: {
-      locked: "0",
-      refundable: "0",
-      usable: "0",
-      userBalance: "0"
-    }
-  };
-});
+const iconInitTokenBalance: Array<TokenType> = TOKENS_AVAILABLE.map(
+  tokenName => {
+    return {
+      token: tokenName!,
+      label: "",
+      claiming: false,
+      balance: {
+        locked: "0",
+        refundable: "0",
+        usable: "0",
+        userBalance: "0"
+      }
+    };
+  }
+);
 
 // main component
 function Home() {
@@ -55,20 +62,19 @@ function Home() {
   const [tokenToTransfer, setTokenToTransfer] = useState<Tokens>(
     lib.tokens[0]!
   );
-  const [amountToTransfer, setAmountToTransfer] = useState("");
+  const [amountToTransfer, setAmountToTransfer] = useState<string>("");
   const [useMainnet, setUseMainnet] = useState(false);
   const [targetAddress, setTargetAddress] = useState<string | null>(null);
   const [targetStatus, setTargetStatus] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [transferTxResult, setTransferTxResult] = useState<any>(null);
   const [methodCallTxResult, setMethodCallTxResult] = useState<any>(null);
-  const [loginWallets, setLoginWallets] = useState(WALLETS_INIT);
-  const [tempTxResult, setTempTxResult] = useState<any>(null);
-  const [iconTokensBalance, setIconTokenBalance] = useState<
-    typeof iconInitTokenBalance
-  >(iconInitTokenBalance);
+  const [reclaimCallTxResult, setReclaimCallTxResult] = useState<any>(null);
+  const [loginWallets, setLoginWallets] = useState<WalletsType>(WALLETS_INIT);
+  const [iconTokensBalance, setIconTokenBalance] = useState<Array<TokenType>>(
+    iconInitTokenBalance
+  );
 
-  const waitingSecondTx = useRef(false);
   const txFlag = useRef<TxType>("");
 
   // FOR TESTING
@@ -88,41 +94,40 @@ function Home() {
     "Home"
   );
 
-  function handleWalletsChange(wallets: typeof WALLETS_INIT) {
+  function resetTxStates() {
+    setTransferTxResult(null);
+    setMethodCallTxResult(null);
+    setReclaimCallTxResult(null);
+  }
+
+  function handleWalletsChange(wallets: WalletsType) {
     return helpers.handleWalletsChange(wallets, setLoginWallets);
   }
+
   function handleModalClose() {
-    return helpers.handleModalClose(
-      setIsModalOpen,
-      setTransferTxResult,
-      setMethodCallTxResult
-    );
+    setIsModalOpen(false);
   }
+
   function handleOnChainFromIcon(evnt: any) {
-    return helpers.handleOnChainFromIcon(
-      evnt,
-      setTransferTxResult,
-      setMethodCallTxResult,
-      setFromIcon
-    );
+    return helpers.handleOnChainFromIcon(evnt, setFromIcon);
   }
+
   function handleOnChainFromBsc(evnt: any) {
     return helpers.handleOnChainFromBsc(evnt, setFromIcon);
   }
+
   function handleTokenSelection(evnt: any) {
-    return helpers.handleTokenSelection(
-      evnt,
-      setTransferTxResult,
-      setMethodCallTxResult,
-      setTokenToTransfer
-    );
+    return helpers.handleTokenSelection(evnt, setTokenToTransfer);
   }
+
   function handleAmountToTransferChange(evnt: any) {
     helpers.handleAmountToTransferChange(evnt, setAmountToTransfer);
   }
+
   function handleOnNetworkChange(evnt: any) {
     return helpers.handleOnNetworkChange(evnt, setUseMainnet);
   }
+
   async function handleOnTransfer() {
     const result = await helpers.handleOnTransfer(
       fromIcon,
@@ -131,7 +136,7 @@ function Home() {
       tokenToTransfer,
       amountToTransfer,
       useMainnet,
-      targetAddress
+      targetAddress!
     );
     if (result.query != null) {
       txFlag.current = result.type;
@@ -139,22 +144,30 @@ function Home() {
       setIsModalOpen(true);
     }
   }
+
   function handleOnTargetAddressChange(evnt: any) {
     return helpers.handleOnTargetAddressChange(evnt, setTargetAddress);
   }
 
-  async function handleTokenToRefund(token: {
-    token: string;
-    label: string;
-    balance: { refundable: string };
-  }) {
-    // TODO
+  async function handleTokenToRefund(token: TokenType) {
+    setIconTokenBalance(status => {
+      const result: Array<TokenType> = [];
+      status.forEach(eachToken => {
+        if (eachToken.token === token.token) {
+          result.push({ ...token, claiming: true });
+        } else result.push(eachToken);
+      });
+      return result;
+    });
+
     const queryObj = await helpers.refundIconTokenBalance(
       loginWallets,
       useMainnet,
       token
     );
     console.log(queryObj);
+    txFlag.current = "reclaimCall";
+    helpers.dispatchTxEvent(queryObj);
   }
 
   async function handleIconWalletResponse(evnt: any) {
@@ -163,33 +176,26 @@ function Home() {
     console.log(type);
     console.log(payload);
 
+    let txResult = payload;
+    if (payload.result != null) {
+      txResult = await lib.getTxResult(payload.result, useMainnet);
+    }
     // switch case for every type of event raised
     switch (type) {
       case "RESPONSE_JSON-RPC":
-        let txResult = payload;
-        if (payload.error == null) {
-          txResult = await lib.getTxResult(payload.result, useMainnet);
-        }
         switch (txFlag.current) {
           case "":
             break;
           case "transfer":
             setTransferTxResult(txResult);
-            txFlag.current = "";
             break;
           case "methodCall":
+            // dispatch second Tx executing the 'transfer' call on the btp
+            // smart contract
             setMethodCallTxResult(txResult);
-            txFlag.current = "transfer";
-            helpers.dispatchSecondTx(
-              tokenToTransfer,
-              fromIcon,
-              useMainnet,
-              amountToTransfer,
-              targetAddress,
-              loginWallets
-            );
             break;
           case "reclaimCall":
+            setReclaimCallTxResult(txResult);
             break;
           default:
         }
@@ -198,6 +204,49 @@ function Home() {
       default:
     }
   }
+
+  useEffect(() => {
+    console.log("transferTxResult");
+    console.log(transferTxResult);
+  }, [transferTxResult]);
+
+  useEffect(() => {
+    if (reclaimCallTxResult != null && txFlag.current === "reclaimCall") {
+      txFlag.current = "";
+      helpers.getIconTokensBalance(
+        loginWallets,
+        useMainnet,
+        TOKENS_AVAILABLE,
+        setIconTokenBalance
+      );
+    }
+  }, [reclaimCallTxResult, loginWallets, useMainnet]);
+
+  useEffect(() => {
+    if (
+      methodCallTxResult != null &&
+      txFlag.current === "methodCall" &&
+      targetAddress != null
+    ) {
+      txFlag.current = "transfer";
+      helpers.dispatchSecondTx(
+        tokenToTransfer,
+        fromIcon,
+        useMainnet,
+        amountToTransfer,
+        targetAddress,
+        loginWallets
+      );
+    }
+  }, [
+    methodCallTxResult,
+    tokenToTransfer,
+    fromIcon,
+    useMainnet,
+    amountToTransfer,
+    targetAddress,
+    loginWallets
+  ]);
 
   useEffect(() => {
     if (loginWallets.icon != null) {
@@ -227,8 +276,8 @@ function Home() {
 
   useEffect(() => {
     if (!isModalOpen) {
-      setTransferTxResult(null);
-      setMethodCallTxResult(null);
+      resetTxStates();
+      txFlag.current = "";
     }
   }, [isModalOpen]);
 
@@ -364,12 +413,6 @@ function Home() {
   );
 }
 
-type ChainComponentType = {
-  label: string;
-  fromIcon: boolean;
-  handle: any;
-};
-
 function ChainComponent({ label, fromIcon, handle }: ChainComponentType) {
   return (
     <div className={styles.chainContainer}>
@@ -447,10 +490,6 @@ function TxModal({
   );
 }
 
-type TxResultComponentType = {
-  txResult: any;
-};
-
 function TxResultComponent({ txResult }: TxResultComponentType) {
   console.log("txResult");
   console.log(txResult);
@@ -473,4 +512,5 @@ function TxResultComponent({ txResult }: TxResultComponentType) {
     <p>Tx hash result: {parsedMessage}</p>
   );
 }
+
 export default Home;

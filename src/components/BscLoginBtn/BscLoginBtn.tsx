@@ -1,8 +1,5 @@
+import { BscLoginType } from "../../types";
 import styles from "./BscLoginBtn.module.css";
-
-type BscLoginType = {
-  handleWalletSelect: (wallet: string) => void;
-};
 
 // get ethereum scope from global window object
 

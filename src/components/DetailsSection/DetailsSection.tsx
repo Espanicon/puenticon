@@ -3,13 +3,7 @@ import { Hr } from "../miscItems/miscItems";
 import styles from "./DetailsSection.module.css";
 import { WALLETS_INIT } from "../../helpers/helpers";
 import TokenTable from "../TokenTable/TokenTable";
-
-type DetailsSectionType = {
-  wallets: typeof WALLETS_INIT;
-  iconWalletDetails: any;
-  bscWalletDetails: any;
-  handleTokenToRefund: any;
-};
+import { DetailsSectionType } from "../../types";
 
 export default function DetailsSection({
   wallets,

@@ -1,12 +1,7 @@
-import type { ReactNode, MouseEvent } from "react";
+import type { MouseEvent } from "react";
+import { GenericModalType } from '../../types';
 import styles from "./genericModal.module.css";
 
-type GenericModalType = {
-  isOpen: boolean;
-  onClose: () => void;
-  useSmall?: boolean;
-  children?: ReactNode;
-};
 export default function GenericModal({
   isOpen,
   onClose,

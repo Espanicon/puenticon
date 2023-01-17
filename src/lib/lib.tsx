@@ -198,7 +198,6 @@ async function getTxResult(
 ) {
   console.log("getTxResult");
   console.log(hash);
-  console.log(useMainnet);
 
   let sdk: any = null;
 
@@ -304,7 +303,8 @@ const lib = {
   isValidIconAddress,
   useTraceUpdate,
   getTxResult,
-  getBtpCoinName
+  getBtpCoinName,
+  btpTokenNames
 };
 
 export default lib;

@@ -2,11 +2,7 @@ import { useState } from "react";
 import IconLoginBtn from "../IconLoginBtn/IconLoginBtn";
 import BscLoginBtn from "../BscLoginBtn/BscLoginBtn";
 import styles from "./WalletSelect.module.css";
-
-type WalletProps = {
-  chain?: string;
-  handleWalletsChange: any;
-};
+import { WalletProps } from "../../types";
 
 function handleLoginGeneral(wallet: string, setArr: any, setSelected: any) {
   // update array of wallets in the options of the select component

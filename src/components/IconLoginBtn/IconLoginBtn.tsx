@@ -1,24 +1,8 @@
-import {useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import styles from "./IconLoginBtn.module.css";
-
-type IconLoginType = {
-  handleWalletSelect : (wallet: string) => void;
-};
-
-interface CustomEventType  extends Event {
-  detail: {
-    type: string;
-    payload: string
-  }
-}
-declare global {
-  interface WindowEventMap {
-    "ICONEX_RELAY_RESPONSE": CustomEventType
-  } 
-}
+import { IconLoginType, CustomEventType } from "../../types";
 
 export default function IconLoginBtn({ handleWalletSelect }: IconLoginType) {
-
   function handleLogin() {
     // event dispatcher for ICON wallets
     window.dispatchEvent(
@@ -32,11 +16,11 @@ export default function IconLoginBtn({ handleWalletSelect }: IconLoginType) {
 
   useEffect(() => {
     function iconexRelayResponseEventHandler(evnt: CustomEventType) {
-      const { type, payload } = evnt?.detail;
+      const { type, payload } = evnt.detail;
 
       switch (type) {
         case "RESPONSE_ADDRESS":
-          handleWalletSelect(payload)
+          handleWalletSelect(payload);
           break;
         case "CANCEL":
           console.log("ICONEX/Hana wallet selection window closed by user");
@@ -48,8 +32,8 @@ export default function IconLoginBtn({ handleWalletSelect }: IconLoginType) {
     // add event listener for the wallet response on wallet selection
     window.addEventListener(
       "ICONEX_RELAY_RESPONSE",
-        iconexRelayResponseEventHandler
-    )
+      iconexRelayResponseEventHandler
+    );
 
     // return function to clean up event on component unmount
     return function removeCustomEventListener() {
