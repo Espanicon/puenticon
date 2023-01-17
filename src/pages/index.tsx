@@ -146,8 +146,9 @@ function Home() {
       }
     } else {
       if (result.bscQuery != null) {
+        setIsModalOpen(true);
         const txHash = await helpers.dispatchBscTransfer(result.bscQuery);
-        console.log(txHash);
+        setTransferTxResult(txHash);
       }
     }
   }
@@ -463,32 +464,55 @@ function TxModal({
         tokenToTransfer === lib.tokenNames.icx ? (
           <>
             <p>Transferring ICX from ICON to BSC</p>
-            <TxResultComponent txResult={transferTxResult} />
+            <TxResultComponent
+              txResult={transferTxResult}
+              fromIcon={fromIcon}
+            />
           </>
         ) : lib.iconTokens.native.includes(tokenToTransfer!) ? (
           <>
             <p>Transferring ICON native token</p>
             <p>Pre approval transaction result:</p>
-            <TxResultComponent txResult={methodCallTxResult} />
+            <TxResultComponent
+              txResult={methodCallTxResult}
+              fromIcon={fromIcon}
+            />
             <p>Main transaction result:</p>
-            <TxResultComponent txResult={transferTxResult} />
+            <TxResultComponent
+              txResult={transferTxResult}
+              fromIcon={fromIcon}
+            />
           </>
         ) : (
           <>
             <p>transferring ICON wrapped token</p>
             <p>Pre approval transaction result:</p>
-            <TxResultComponent txResult={methodCallTxResult} />
+            <TxResultComponent
+              txResult={methodCallTxResult}
+              fromIcon={fromIcon}
+            />
             <p>Main transaction result:</p>
-            <TxResultComponent txResult={transferTxResult} />
+            <TxResultComponent
+              txResult={transferTxResult}
+              fromIcon={fromIcon}
+            />
           </>
         )
       ) : tokenToTransfer === lib.tokenNames.bnb ? (
         <>
           <p>transferring BNB from BSC to ICON</p>
+          <TxResultComponent txResult={transferTxResult} fromIcon={fromIcon} />
         </>
       ) : (
         <>
           <p>transferring token from BSC to ICON</p>
+          <p>Pre approval transaction result:</p>
+          <TxResultComponent
+            txResult={methodCallTxResult}
+            fromIcon={fromIcon}
+          />
+          <p>Main transaction result:</p>
+          <TxResultComponent txResult={transferTxResult} fromIcon={fromIcon} />
         </>
       )}
 
@@ -497,27 +521,36 @@ function TxModal({
   );
 }
 
-function TxResultComponent({ txResult }: TxResultComponentType) {
+function TxResultComponent({ txResult, fromIcon }: TxResultComponentType) {
   console.log("txResult");
   console.log(txResult);
   let message = "ERROR";
 
-  if (txResult != null) {
-    if (txResult.error != null || txResult.failure != null) {
-      message = txResult.error == null ? txResult.failure : txResult.error;
-    } else {
-      message = txResult.txHash;
+  if (fromIcon) {
+    if (txResult != null) {
+      if (txResult.error != null || txResult.failure != null) {
+        message =
+          txResult.error == null
+            ? `Error response from Chain: ${JSON.stringify(txResult.failure)}`
+            : `Error making tx request: ${txResult.error}`;
+      } else {
+        message = `Tx hash result: ${JSON.stringify(txResult.txHash)}`;
+      }
+    }
+  } else {
+    if (txResult != null) {
+      if (txResult.code != null) {
+        message = `Tx hash result: ${JSON.stringify({
+          code: txResult.code,
+          message: txResult.message
+        })}`;
+      } else {
+        message = `Tx hash result: ${JSON.stringify(txResult)}`;
+      }
     }
   }
 
-  const parsedMessage = JSON.stringify(message);
-  return txResult === null ? (
-    <p>waiting...</p>
-  ) : txResult.error != null ? (
-    <p>Error response from chain: {parsedMessage}</p>
-  ) : (
-    <p>Tx hash result: {parsedMessage}</p>
-  );
+  return txResult === null ? <p>waiting...</p> : <p>{message}</p>;
 }
 
 export default Home;

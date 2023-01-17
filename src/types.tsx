@@ -54,6 +54,7 @@ export type ChainComponentType = {
 
 export type TxResultComponentType = {
   txResult: any;
+  fromIcon: boolean;
 };
 
 export type WalletProps = {
