@@ -6,7 +6,8 @@ import {
   JSONRPCType,
   TxType,
   TokenType,
-  WalletsType
+  WalletsType,
+  BscParams
 } from "../types";
 
 import IconBridgeSDK from "@espanicon/icon-bridge-sdk-js";
@@ -148,7 +149,7 @@ async function getIconTokensBalance(
       if (query != null) {
         const arrBalances = Object.keys(query.result);
         const parsedBalances: {
-          [key: string]: any;
+          [key: string]: string;
         } = {};
         for (const typeOfBalance of arrBalances) {
           const rawBalance = query.result[typeOfBalance];
@@ -178,10 +179,12 @@ async function handleOnTransfer(
 ) {
   // TODO:
   const result: {
-    query: null | JSONRPCType;
+    iconQuery: null | JSONRPCType;
+    bscQuery: null | BscParams;
     type: TxType;
   } = {
-    query: null,
+    iconQuery: null,
+    bscQuery: null,
     type: ""
   };
 
@@ -204,7 +207,7 @@ async function handleOnTransfer(
       if (tokenToTransfer === lib.tokenNames.icx) {
         // if token to transfer is ICX. use 'transferNativeCoin' method
         // of btp contract.
-        result.query = await sdkMethods.transferNativeCoin(
+        result.iconQuery = await sdkMethods.transferNativeCoin(
           targetAddress, // target bsc wallet address
           "bsc", // target chain
           loginWallets.icon, // originating icon wallet address
@@ -222,7 +225,7 @@ async function handleOnTransfer(
           // of tokens to the BTP contract and then the second one is to call
           // the 'transfer' method of the BTP contract.
 
-          result.query = await sdkMethods.transferToBTSContract(
+          result.iconQuery = await sdkMethods.transferToBTSContract(
             amountToTransfer,
             contractAddress,
             loginWallets.icon
@@ -235,7 +238,7 @@ async function handleOnTransfer(
           // amount and the second tx is to call the 'transfer' method of the
           // btp contract.
 
-          result.query = await sdkMethods.approveBTSContract(
+          result.iconQuery = await sdkMethods.approveBTSContract(
             amountToTransfer,
             contractAddress,
             loginWallets.icon
@@ -245,12 +248,35 @@ async function handleOnTransfer(
       }
     } else {
       // if !fromIcon
+      if (tokenToTransfer === lib.tokenNames.bnb) {
+        // if token to transfer is BNB. use 'transferNativeCoin' method
+        // of btp contract.
+        console.log("amount to transfer");
+        console.log(amountToTransfer);
+        const parsedAmount = lib.decimalToHex(
+          Number(amountToTransfer) * 10 ** 18
+        );
+        console.log(parsedAmount);
+        result.bscQuery = await sdkMethods.transferNativeCoin(
+          targetAddress, // target icon wallet address
+          "icon", // target chain
+          loginWallets.bsc, // originating icon wallet address
+          amountToTransfer // amount
+          // parsedAmount // amount
+        );
+        result.type = "transfer";
+      } else {
+        //
+      }
     }
   }
   return result;
 }
 
-function handleOnTargetAddressChange(evnt: any, setTargetAddress: any) {
+function handleOnTargetAddressChange(
+  evnt: ChangeEvent<HTMLInputElement>,
+  setTargetAddress: Dispatch<string>
+) {
   const regex = /^[A-Za-z0-9]*$/;
 
   if (evnt.target.value.match(regex)) {
@@ -286,6 +312,22 @@ async function dispatchSecondTx(
   }
 }
 
+async function dispatchBscTransfer(params: BscParams) {
+  try {
+    console.log("params");
+    console.log(params);
+    const txHash = await ethereum.request({
+      method: "eth_sendTransaction",
+      params: [params]
+    });
+
+    return txHash;
+  } catch (err) {
+    console.log(err);
+    return err;
+  }
+}
+
 export const helpers = {
   dispatchTxEvent,
   handleWalletsChange,
@@ -298,5 +340,6 @@ export const helpers = {
   handleOnTargetAddressChange,
   dispatchSecondTx,
   getIconTokensBalance,
-  refundIconTokenBalance
+  refundIconTokenBalance,
+  dispatchBscTransfer
 };

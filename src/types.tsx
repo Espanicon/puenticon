@@ -104,3 +104,11 @@ export type JSONRPCType = {
 };
 
 export type TxType = "" | "transfer" | "methodCall" | "reclaimCall";
+
+export type BscParams = {
+  to: string;
+  from: string;
+  gas: string;
+  data: string;
+  value: string;
+}

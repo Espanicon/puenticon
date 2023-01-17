@@ -138,10 +138,17 @@ function Home() {
       useMainnet,
       targetAddress!
     );
-    if (result.query != null) {
-      txFlag.current = result.type;
-      helpers.dispatchTxEvent(result.query);
-      setIsModalOpen(true);
+    if (fromIcon) {
+      if (result.iconQuery != null) {
+        txFlag.current = result.type;
+        helpers.dispatchTxEvent(result.iconQuery);
+        setIsModalOpen(true);
+      }
+    } else {
+      if (result.bscQuery != null) {
+        const txHash = await helpers.dispatchBscTransfer(result.bscQuery);
+        console.log(txHash);
+      }
     }
   }
 

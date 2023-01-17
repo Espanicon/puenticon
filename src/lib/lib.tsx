@@ -294,6 +294,14 @@ function getBtpCoinName(tokenLabel: string, useMainnet: boolean) {
   return coinName;
 }
 
+function decimalToHex(decimal: number) {
+  return "0x" + decimal.toString(16);
+}
+
+function hexToDecimal(hex: string) {
+  return parseInt(hex, 16);
+}
+
 const lib = {
   tokenNames,
   iconTokens,
@@ -304,7 +312,9 @@ const lib = {
   useTraceUpdate,
   getTxResult,
   getBtpCoinName,
-  btpTokenNames
+  btpTokenNames,
+  decimalToHex,
+  hexToDecimal
 };
 
 export default lib;
