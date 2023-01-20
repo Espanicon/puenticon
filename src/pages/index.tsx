@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import IconBridgeSDK from "@espanicon/icon-bridge-sdk-js";
 import dynamic from "next/dynamic";
 import styles from "./index.module.css";
 import { Hr } from "../components/miscItems/miscItems";
@@ -25,6 +26,13 @@ const DetailsSection = dynamic(
   () => import("../components/DetailsSection/DetailsSection"),
   { ssr: false }
 );
+
+// iconBridge sdk instances
+const sdkTestnet = new IconBridgeSDK({ useMainnet: false });
+const sdkMainnet = new IconBridgeSDK({ useMainnet: true });
+const CONTRACTS = sdkTestnet.sdkUtils.contracts;
+// const CONTRACT_LABELS = sdkTestnet.sdkUtils.labels;
+const CONTRACT_LIST = lib.buildContractList(CONTRACTS);
 
 // variable declarations
 const TOKENS_AVAILABLE: Partial<typeof lib.tokens> = [
@@ -136,8 +144,13 @@ function Home() {
       tokenToTransfer,
       amountToTransfer,
       useMainnet,
-      targetAddress!
+      targetAddress!,
+      sdkTestnet,
+      sdkMainnet,
+      CONTRACT_LIST
     );
+    console.log("transfer request");
+    console.log(result);
     if (fromIcon) {
       if (result.iconQuery != null) {
         txFlag.current = result.type;
@@ -171,7 +184,9 @@ function Home() {
     const queryObj = await helpers.refundIconTokenBalance(
       loginWallets,
       useMainnet,
-      token
+      token,
+      sdkTestnet,
+      sdkMainnet
     );
     console.log(queryObj);
     txFlag.current = "reclaimCall";
@@ -185,7 +200,7 @@ function Home() {
     console.log(payload);
 
     let txResult = payload;
-    if (payload.result != null) {
+    if (payload != null && payload.result != null) {
       txResult = await lib.getTxResult(payload.result, useMainnet);
     }
     // switch case for every type of event raised
@@ -209,14 +224,10 @@ function Home() {
         }
         break;
       case "CANCEL_JSON-RPC":
+        handleModalClose();
       default:
     }
   }
-
-  useEffect(() => {
-    console.log("transferTxResult");
-    console.log(transferTxResult);
-  }, [transferTxResult]);
 
   useEffect(() => {
     if (reclaimCallTxResult != null && txFlag.current === "reclaimCall") {
@@ -225,7 +236,9 @@ function Home() {
         loginWallets,
         useMainnet,
         TOKENS_AVAILABLE,
-        setIconTokenBalance
+        setIconTokenBalance,
+        sdkTestnet,
+        sdkMainnet
       );
     }
   }, [reclaimCallTxResult, loginWallets, useMainnet]);
@@ -243,7 +256,9 @@ function Home() {
         useMainnet,
         amountToTransfer,
         targetAddress,
-        loginWallets
+        loginWallets,
+        sdkTestnet,
+        sdkMainnet
       );
     }
   }, [
@@ -262,7 +277,9 @@ function Home() {
         loginWallets,
         useMainnet,
         TOKENS_AVAILABLE,
-        setIconTokenBalance
+        setIconTokenBalance,
+        sdkTestnet,
+        sdkMainnet
       );
     } else if (loginWallets.bsc != null) {
       //
@@ -522,8 +539,6 @@ function TxModal({
 }
 
 function TxResultComponent({ txResult, fromIcon }: TxResultComponentType) {
-  console.log("txResult");
-  console.log(txResult);
   let message = "ERROR";
 
   if (fromIcon) {

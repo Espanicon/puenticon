@@ -68,6 +68,32 @@ const iconTokens = {
   ]
 };
 
+function buildContractList(sdkContracts: any) {
+  const chains = Object.keys(sdkContracts);
+  const result: any = {};
+
+  for (const chain of chains) {
+    result[chain] = {};
+    const networks = Object.keys(sdkContracts[chain]);
+    for (const network of networks) {
+      const tokens = Object.keys(sdkContracts[chain][network]);
+      for (const token of tokens) {
+        if (result[chain][token] == null) {
+          result[chain][token] = {
+            [network]: sdkContracts[chain][network][token].address
+          };
+        } else {
+          result[chain][token] = {
+            ...result[chain][token],
+            [network]: sdkContracts[chain][network][token].address
+          };
+        }
+      }
+    }
+  }
+  return result;
+}
+
 const contracts = {
   icon: {
     [tokenNames.bnb]: {
@@ -314,7 +340,8 @@ const lib = {
   getBtpCoinName,
   btpTokenNames,
   decimalToHex,
-  hexToDecimal
+  hexToDecimal,
+  buildContractList
 };
 
 export default lib;

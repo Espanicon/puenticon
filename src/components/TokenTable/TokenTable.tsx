@@ -13,8 +13,6 @@ export default function TokenTable({
   tokens,
   handleTokenToRefund
 }: TokenTableType) {
-  console.log("TokenTable tokens");
-  console.log(tokens);
   const tokensKeys = tokens.map(eachToken => {
     return crypto.randomUUID();
   });
@@ -24,8 +22,6 @@ export default function TokenTable({
       handleTokenToRefund(token);
     }
   }
-
-  console.log(tokens);
   return (
     <div className={styles.main}>
       <table className={styles.table}>

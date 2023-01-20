@@ -18,6 +18,7 @@
     "zod": "^3.18.0"
   },
   "devDependencies": {
+    "@metamask/providers": "^10.2.1",
     "@types/mocha": "^10.0.1",
     "@types/node": "^18.0.0",
     "@types/react": "^18.0.14",

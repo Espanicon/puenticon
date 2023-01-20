@@ -10,11 +10,11 @@ import {
   BscParams
 } from "../types";
 
-import IconBridgeSDK from "@espanicon/icon-bridge-sdk-js";
+// import IconBridgeSDK from "@espanicon/icon-bridge-sdk-js";
 
 // variable declarations
-const sdkTestnet = new IconBridgeSDK({ useMainnet: false });
-const sdkMainnet = new IconBridgeSDK({ useMainnet: true });
+// const sdkTestnet = new IconBridgeSDK({ useMainnet: false });
+// const sdkMainnet = new IconBridgeSDK({ useMainnet: true });
 
 export const WALLETS_INIT: WalletsType = {
   icon: null,
@@ -112,7 +112,9 @@ function handleOnNetworkChange(
 async function refundIconTokenBalance(
   loginWallets: WalletsType,
   useMainnet: boolean,
-  tokenData: TokenType
+  tokenData: TokenType,
+  sdkTestnet: any,
+  sdkMainnet: any
 ) {
   const wallet = loginWallets.icon;
   const localSdk = useMainnet ? sdkMainnet.icon : sdkTestnet.icon;
@@ -132,7 +134,9 @@ async function getIconTokensBalance(
   loginWallets: WalletsType,
   useMainnet: boolean,
   arrOfTokens: Partial<typeof lib.tokens>,
-  callback: Dispatch<Array<TokenType>>
+  callback: Dispatch<Array<TokenType>>,
+  sdkTestnet: any,
+  sdkMainnet: any
 ) {
   const wallet = loginWallets.icon;
   const localSdk = useMainnet ? sdkMainnet.icon : sdkTestnet.icon;
@@ -175,7 +179,10 @@ async function handleOnTransfer(
   tokenToTransfer: Tokens,
   amountToTransfer: string,
   useMainnet: boolean,
-  targetAddress: string
+  targetAddress: string,
+  sdkTestnet: any,
+  sdkMainnet: any,
+  sdkContracts: any
 ) {
   // TODO:
   const result: {
@@ -216,8 +223,8 @@ async function handleOnTransfer(
         result.type = "transfer";
       } else {
         const contractAddress = useMainnet
-          ? lib.contracts.icon[tokenToTransfer]!.mainnet
-          : lib.contracts.icon[tokenToTransfer]!.testnet;
+          ? sdkContracts.icon[tokenToTransfer]!.mainnet
+          : sdkContracts.icon[tokenToTransfer]!.testnet;
 
         if (lib.iconTokens.native.includes(tokenToTransfer)) {
           // if token to transfer is a native ICON token, the proccess
@@ -244,6 +251,7 @@ async function handleOnTransfer(
             loginWallets.icon
           );
           result.type = "methodCall";
+          console.log(result.iconQuery);
         }
       }
     } else {
@@ -266,7 +274,9 @@ async function handleOnTransfer(
         );
         result.type = "transfer";
       } else {
-        //
+        // const contractAddress = useMainnet
+        //   ? sdkContracts.bsc[tokenToTransfer]!.mainnet
+        //   : sdkContracts.bsc[tokenToTransfer]!.testnet;
       }
     }
   }
@@ -290,7 +300,9 @@ async function dispatchSecondTx(
   useMainnet: boolean,
   amountToTransfer: string,
   targetAddress: string,
-  loginWallets: WalletsType
+  loginWallets: WalletsType,
+  sdkTestnet: any,
+  sdkMainnet: any
 ) {
   console.log("dispatch second tx");
   if (typeof tokenToTransfer === "string") {
@@ -316,7 +328,7 @@ async function dispatchBscTransfer(params: BscParams) {
   try {
     console.log("params");
     console.log(params);
-    const txHash = await ethereum.request({
+    const txHash = await window.ethereum.request({
       method: "eth_sendTransaction",
       params: [params]
     });
