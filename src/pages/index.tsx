@@ -37,7 +37,7 @@ const CONTRACT_LIST = lib.buildContractList(CONTRACTS);
 // variable declarations
 const TOKENS_AVAILABLE: Partial<typeof lib.tokens> = [
   lib.tokenNames.icx,
-  // lib.tokenNames.sicx,
+  lib.tokenNames.sicx,
   lib.tokenNames.bnb
   // lib.tokenNames.btcb,
   // lib.tokenNames.eth,
