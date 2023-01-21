@@ -23,6 +23,8 @@ export const WALLETS_INIT: WalletsType = {
 
 // functions
 function dispatchTxEvent(txData: JSONRPCType) {
+  console.log("event tx data");
+  console.log(txData);
   window.dispatchEvent(
     new CustomEvent("ICONEX_RELAY_REQUEST", {
       detail: {
