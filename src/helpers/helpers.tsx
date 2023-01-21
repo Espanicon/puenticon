@@ -311,14 +311,14 @@ async function dispatchSecondTx(
     const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
     const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
 
-    const chain = fromIcon ? "icon" : "bsc";
+    const targetChain = fromIcon ? "bsc" : "icon";
     const btpCoinName = lib.getBtpCoinName(tokenToTransfer, useMainnet);
     const query = await sdkMethods.transfer(
       btpCoinName,
       amountToTransfer,
-      chain,
-      targetAddress,
-      loginWallets.icon
+      loginWallets.icon,
+      targetChain,
+      targetAddress
     );
     console.log("second query");
     console.log(query);
