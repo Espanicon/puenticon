@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { TokenType, TokenTableType } from "../../types";
 import { LoadingComponent } from "../miscItems/miscItems";
 import styles from "./TokenTable.module.css";

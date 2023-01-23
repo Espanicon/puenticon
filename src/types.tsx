@@ -113,3 +113,17 @@ export type BscParams = {
   data: string;
   value: string;
 }
+
+export type BscBalanceOfReply = {
+  _usableBalance: string;
+  _lockedBalance: string;
+  _refundableBalance: string;
+  _userBalance: string;
+  error?: any;
+}
+
+export type IconBalanceOfReply = {
+  result: {
+    [key: string]: string;
+  }
+}

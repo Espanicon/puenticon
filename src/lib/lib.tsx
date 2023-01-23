@@ -1,5 +1,6 @@
 import { useRef, useEffect } from "react";
 import EspaniconSDKWeb from "@espanicon/espanicon-sdk";
+import { BscBalanceOfReply, IconBalanceOfReply } from "../types";
 
 const RPC_NODES = {
   ctz: {
@@ -328,6 +329,19 @@ function hexToDecimal(hex: string) {
   return parseInt(hex, 16);
 }
 
+function formatBscBalanceResponse(
+  rawBalance: BscBalanceOfReply
+): IconBalanceOfReply {
+  return {
+    result: {
+      locked: rawBalance._lockedBalance,
+      refundable: rawBalance._refundableBalance,
+      usable: rawBalance._usableBalance,
+      userBalance: rawBalance._userBalance
+    }
+  };
+}
+
 const lib = {
   tokenNames,
   iconTokens,
@@ -341,7 +355,8 @@ const lib = {
   btpTokenNames,
   decimalToHex,
   hexToDecimal,
-  buildContractList
+  buildContractList,
+  formatBscBalanceResponse
 };
 
 export default lib;

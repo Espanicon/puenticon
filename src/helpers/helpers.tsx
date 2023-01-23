@@ -7,7 +7,9 @@ import {
   TxType,
   TokenType,
   WalletsType,
-  BscParams
+  BscParams,
+  IconBalanceOfReply,
+  BscBalanceOfReply
 } from "../types";
 
 // import IconBridgeSDK from "@espanicon/icon-bridge-sdk-js";
@@ -130,6 +132,61 @@ async function refundIconTokenBalance(
   );
 
   return queryObj;
+}
+
+async function getBscTokensBalance(
+  loginWallets: WalletsType,
+  useMainnet: boolean,
+  arrOfTokens: Partial<typeof lib.tokens>,
+  callback: Dispatch<Array<TokenType>>,
+  sdkTestnet: any,
+  sdkMainnet: any
+) {
+  try {
+    const wallet = loginWallets.bsc;
+    console.log("wallets");
+    console.log(wallet);
+    const localSdk = useMainnet ? sdkMainnet.bsc : sdkTestnet.bsc;
+    const result = [];
+    for (const token of arrOfTokens) {
+      if (token != null) {
+        const tokenLabel = lib.getBtpCoinName(token, useMainnet);
+        const rawQuery = ((await localSdk.methods.balanceOf(
+          wallet,
+          tokenLabel
+        )) as unknown) as BscBalanceOfReply;
+        if (rawQuery == null || rawQuery.error != null) {
+          throw new Error("Error fetching balance of tokens on BSC chain");
+        }
+        console.log("bsc raw query");
+        console.log(rawQuery);
+        const query = (lib.formatBscBalanceResponse(
+          rawQuery
+        ) as unknown) as IconBalanceOfReply;
+        if (query != null) {
+          const arrBalances = (Object.keys(query.result) as unknown) as any[];
+          const parsedBalances: { [key: string]: string } = {};
+          for (const typeOfBalance of arrBalances) {
+            const rawBalance = query.result[typeOfBalance];
+            // parseInt(query.result[typeOfBalance], 16) / 10 ** 18;
+            parsedBalances[typeOfBalance] = rawBalance!;
+          }
+          result.push({
+            token: token,
+            label: tokenLabel,
+            claiming: false,
+            balance: { ...parsedBalances }
+          });
+        }
+      }
+    }
+    console.log("bsc balance");
+    console.log(result);
+    callback(result);
+  } catch (err) {
+    console.log("error fetching bsc balance");
+    console.log(err);
+  }
 }
 
 async function getIconTokensBalance(
@@ -354,6 +411,7 @@ export const helpers = {
   handleOnTargetAddressChange,
   dispatchSecondTx,
   getIconTokensBalance,
+  getBscTokensBalance,
   refundIconTokenBalance,
   dispatchBscTransfer
 };

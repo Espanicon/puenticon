@@ -79,9 +79,10 @@ function Home() {
   const [methodCallTxResult, setMethodCallTxResult] = useState<any>(null);
   const [reclaimCallTxResult, setReclaimCallTxResult] = useState<any>(null);
   const [loginWallets, setLoginWallets] = useState<WalletsType>(WALLETS_INIT);
-  const [iconTokensBalance, setIconTokenBalance] = useState<Array<TokenType>>(
+  const [iconTokensBalance, setIconTokensBalance] = useState<Array<TokenType>>(
     iconInitTokenBalance
   );
+  const [bscTokensBalance, setBscTokensBalance] = useState<any>(null);
 
   const txFlag = useRef<TxType>("");
 
@@ -171,7 +172,7 @@ function Home() {
   }
 
   async function handleTokenToRefund(token: TokenType) {
-    setIconTokenBalance(status => {
+    setIconTokensBalance(status => {
       const result: Array<TokenType> = [];
       status.forEach(eachToken => {
         if (eachToken.token === token.token) {
@@ -236,7 +237,7 @@ function Home() {
         loginWallets,
         useMainnet,
         TOKENS_AVAILABLE,
-        setIconTokenBalance,
+        setIconTokensBalance,
         sdkTestnet,
         sdkMainnet
       );
@@ -277,14 +278,26 @@ function Home() {
         loginWallets,
         useMainnet,
         TOKENS_AVAILABLE,
-        setIconTokenBalance,
+        setIconTokensBalance,
         sdkTestnet,
         sdkMainnet
       );
     } else if (loginWallets.bsc != null) {
-      //
+      helpers.getBscTokensBalance(
+        loginWallets,
+        useMainnet,
+        TOKENS_AVAILABLE,
+        setBscTokensBalance,
+        sdkTestnet,
+        sdkMainnet
+      );
     }
   }, [loginWallets]);
+
+  useEffect(() => {
+    console.log("bsc tokens balance");
+    console.log(bscTokensBalance);
+  }, [bscTokensBalance]);
 
   useEffect(() => {
     if (targetAddress !== null) {
@@ -427,7 +440,7 @@ function Home() {
               <DetailsSection
                 wallets={loginWallets}
                 iconWalletDetails={iconTokensBalance}
-                bscWalletDetails={"string4"}
+                bscWalletDetails={bscTokensBalance}
                 handleTokenToRefund={handleTokenToRefund}
               />
             </div>

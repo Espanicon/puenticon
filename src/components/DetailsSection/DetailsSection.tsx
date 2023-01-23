@@ -47,11 +47,18 @@ export default function DetailsSection({
       </div>
       <Hr />
       <div className={styles.body}>
+        <h2>ICON Wallet balance details:</h2>
         <TokenTable
           tableLabel="ICON"
           tokens={iconWalletDetails}
           handleTokenToRefund={handleTokenToRefund}
         />
+        <h2>BSC Wallet balance details:</h2>
+        {/* <TokenTable */}
+        {/*   tableLabel="BSC" */}
+        {/*   tokens={bscWalletDetails} */}
+        {/*   handleTokenToRefund={handleTokenToRefund} */}
+        {/* /> */}
       </div>
     </div>
   );
