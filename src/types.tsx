@@ -127,3 +127,11 @@ export type IconBalanceOfReply = {
     [key: string]: string;
   }
 }
+
+export type Url = {
+  protocol: "https" | "http";
+  hostname: string | null;
+  path: string | null;
+  port: string | null;
+}
+

@@ -243,14 +243,17 @@ async function handleOnTransfer(
   sdkMainnet: any,
   sdkContracts: any
 ) {
-  // TODO:
+  console.log("amountToTransfer");
+  console.log(amountToTransfer);
   const result: {
     iconQuery: null | JSONRPCType;
     bscQuery: null | BscParams;
+    bscQuery2: null | BscParams;
     type: TxType;
   } = {
     iconQuery: null,
     bscQuery: null,
+    bscQuery2: null,
     type: ""
   };
 
@@ -318,12 +321,9 @@ async function handleOnTransfer(
       if (tokenToTransfer === lib.tokenNames.bnb) {
         // if token to transfer is BNB. use 'transferNativeCoin' method
         // of btp contract.
-        console.log("amount to transfer");
-        console.log(amountToTransfer);
         const parsedAmount = lib.decimalToHex(
           Number(amountToTransfer) * 10 ** 18
         );
-        console.log(parsedAmount);
         result.bscQuery = await sdkMethods.transferNativeCoin(
           targetAddress, // target icon wallet address
           "icon", // target chain
@@ -333,9 +333,27 @@ async function handleOnTransfer(
         );
         result.type = "transfer";
       } else {
-        // const contractAddress = useMainnet
-        //   ? sdkContracts.bsc[tokenToTransfer]!.mainnet
-        //   : sdkContracts.bsc[tokenToTransfer]!.testnet;
+        const contractAddress = useMainnet
+          ? sdkContracts.bsc[tokenToTransfer]!.mainnet
+          : sdkContracts.bsc[tokenToTransfer]!.testnet;
+        // if token to transfer is any other token besides BNB.
+        // call 'approve' method on token contract
+
+        result.bscQuery = await sdkMethods.approveTransfer(
+          loginWallets.bsc, // originating icon wallet address
+          amountToTransfer, // amount
+          contractAddress // token contract address
+        );
+
+        const coinName = lib.getBtpCoinName(tokenToTransfer, useMainnet);
+        result.bscQuery2 = await sdkMethods.transfer(
+          targetAddress,
+          "icon",
+          loginWallets.bsc,
+          amountToTransfer,
+          coinName
+        );
+        result.type = "methodCall";
       }
     }
   }

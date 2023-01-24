@@ -1,6 +1,6 @@
 import { useRef, useEffect } from "react";
 import EspaniconSDKWeb from "@espanicon/espanicon-sdk";
-import { BscBalanceOfReply, IconBalanceOfReply } from "../types";
+import { BscBalanceOfReply, IconBalanceOfReply, Url } from "../types";
 
 const RPC_NODES = {
   ctz: {
@@ -342,6 +342,113 @@ function formatBscBalanceResponse(
   };
 }
 
+async function getBscTxResult(
+  hash: string,
+  nodeUrl: string,
+  maxIterations = 20
+) {
+  try {
+    console.log("getTxResult");
+    console.log(hash);
+
+    let sdk = new EspaniconSDKWeb(
+      RPC_NODES.lisbon.hostname,
+      RPC_NODES.lisbon.nid
+    );
+
+    //
+    const jsonRpcObj = makeEthGetTxByHashJsonRpcObj(hash);
+    const urlObj = parseEthRPCUrl(nodeUrl);
+    for (let i = 0; i < maxIterations; i++) {
+      // fetch tx from blockchain
+      console.log(`round ${i}`);
+      console.log(urlObj);
+      console.log(jsonRpcObj);
+      const txResult = await sdk.queryMethod(
+        urlObj.path,
+        jsonRpcObj,
+        urlObj.hostname,
+        urlObj.protocol === "https" ? true : false,
+        urlObj.port === "" ? false : urlObj.port
+      );
+
+      console.log("query response");
+      console.log(txResult);
+
+      if (txResult == null) {
+        throw new Error("error making fetch request");
+      }
+      if (txResult.result == null) {
+        throw new Error(
+          `Error response from chain: ${JSON.stringify(txResult)}`
+        );
+      }
+
+      if (
+        txResult.result.blockNumber == null ||
+        txResult.result.blockNumber === "null"
+      ) {
+        await sleep(3000);
+      } else {
+        return txResult;
+      }
+    }
+
+    return null;
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+function makeEthGetTxByHashJsonRpcObj(data: string) {
+  return makeEthJsonRpcObj(null, data, "eth_getTransactionByHash");
+}
+
+function makeEthJsonRpcObj(
+  to: string | null = null,
+  data: string,
+  callType: string
+) {
+  let params: any[];
+  if (to == null) {
+    params = [data];
+  } else {
+    params = [{ to: to, data: data }];
+  }
+  const result = {
+    jsonrpc: "2.0",
+    method: callType,
+    id: Math.ceil(Math.random() * 100),
+    params: params
+  };
+  return JSON.stringify(result);
+}
+
+function parseEthRPCUrl(nodeUrl: string) {
+  const urlRegex = /^((https|http):\/\/)?(([a-zA-Z0-9-]{1,}\.){1,}([a-zA-Z0-9]{1,63}))(:[0-9]{2,5})?(\/.*)?$/;
+  const inputInLowercase = nodeUrl.toLowerCase();
+  const parsedUrl: Url = {
+    protocol: "https",
+    path: "/",
+    hostname: null,
+    port: "443"
+  };
+
+  const regexResult = inputInLowercase.match(urlRegex);
+
+  if (regexResult != null) {
+    parsedUrl.protocol =
+      regexResult[2] == null
+        ? "https"
+        : ((regexResult[2] as unknown) as "https" | "http");
+    parsedUrl.path = regexResult[7] == null ? "/" : regexResult[7];
+    parsedUrl.hostname = regexResult[3] == undefined ? null : regexResult[3];
+    parsedUrl.port = regexResult[6] == null ? "" : regexResult[6].slice(1);
+  }
+
+  return parsedUrl;
+}
+
 const lib = {
   tokenNames,
   iconTokens,
@@ -356,7 +463,8 @@ const lib = {
   decimalToHex,
   hexToDecimal,
   buildContractList,
-  formatBscBalanceResponse
+  formatBscBalanceResponse,
+  getBscTxResult
 };
 
 export default lib;

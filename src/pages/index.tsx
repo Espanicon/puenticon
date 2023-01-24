@@ -162,7 +162,39 @@ function Home() {
       if (result.bscQuery != null) {
         setIsModalOpen(true);
         const txHash = await helpers.dispatchBscTransfer(result.bscQuery);
-        setTransferTxResult(txHash);
+        if (result.type === "transfer") {
+          // if the transaction of calling transferNativeCoin
+          setTransferTxResult(txHash);
+        } else if (result.type === "methodCall") {
+          // if the tx is calling `approveTransfer`
+          setMethodCallTxResult(txHash);
+
+          // fetch the appropiate sdk depending of the network
+          const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
+
+          // make cross chain transaction of the token
+          const txResult = await lib.getBscTxResult(
+            txHash,
+            localSdk.params.bscProvider.hostname
+          );
+          if (txResult == null) {
+            setTransferTxResult(
+              "ERROR: unexpected error while trying to make transfer"
+            );
+          } else {
+            //dispatch second bsc tx. token transfer tx.
+            if (result.bscQuery2 == null) {
+              setTransferTxResult("ERROR: second tx object is null");
+            } else {
+              const txHash2 = await helpers.dispatchBscTransfer(
+                result.bscQuery2
+              );
+              setTransferTxResult(txHash2);
+            }
+          }
+        } else {
+          // should never happen
+        }
       }
     }
   }
@@ -567,13 +599,17 @@ function TxResultComponent({ txResult, fromIcon }: TxResultComponentType) {
     }
   } else {
     if (txResult != null) {
-      if (txResult.code != null) {
-        message = `Tx hash result: ${JSON.stringify({
-          code: txResult.code,
-          message: txResult.message
-        })}`;
-      } else {
+      if (typeof txResult == "string") {
         message = `Tx hash result: ${JSON.stringify(txResult)}`;
+      } else {
+        if (txResult.result == null) {
+          message = `Error response from chain: ${JSON.stringify({
+            code: txResult.code,
+            message: txResult.message
+          })}`;
+        } else {
+          message = `Tx hash result:${txResult.hash}`;
+        }
       }
     }
   }
