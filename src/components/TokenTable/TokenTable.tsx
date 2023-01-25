@@ -10,10 +10,17 @@ function hexToDecimal(hex: string, decimals: number = 2) {
 export default function TokenTable({
   tableLabel,
   tokens,
-  handleTokenToRefund
+  handleTokenToRefund,
 }: TokenTableType) {
-  const tokensKeys = tokens.map(eachToken => {
-    return crypto.randomUUID();
+  const tokensKeys = tokens.map((eachToken) => {
+    // let ranKey = Math.random
+    try {
+      return self.crypto.randomUUID();
+    } catch (err) {
+      console.log("error accesing randomUUID function");
+      const rand = Math.random() * 100000;
+      return rand.toString();
+    }
   });
 
   function handleOnClick(token: TokenType, refundable: string) {
