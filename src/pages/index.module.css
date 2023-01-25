@@ -23,6 +23,10 @@
   width: 80px;
   height: 30px;
   margin-left: 5px;
+  background-color: rgba(46, 2, 109, 0.5);
+  color: white;
+  border-radius: 6px;
+  border: 1px solid white;
 }
 
 .container {
@@ -210,6 +214,9 @@
   margin-bottom: 10px;
   margin-top: 2px;
   border-radius: 6px;
+  /* opacity: 0.5; */
+  background-color: rgba(46, 2, 109, 0.5);
+  color: white;
 }
 
 .chainContainer > p {
@@ -265,13 +272,15 @@
   border-radius: 6px;
   height: 30px;
   flex: 1;
+  background-color: rgba(46, 2, 109, 0.5);
+  color: white;
 }
 
 .inputAmount {
-  /* height: 20px; */
-  /* max-width: 70%; */
   margin-left: 4px;
   border-radius: 6px;
+  background-color: rgba(46, 2, 109, 0.5);
+  color: white;
 }
 
 .targetStatus {
@@ -302,6 +311,7 @@
   border-radius: 6px;
   background-color: rgb(251 179 105);
   font-size: 16px;
+  font-weight: bold;
   /* color: #cd5c5c; */
   color: #444;
   margin-left: 5px;

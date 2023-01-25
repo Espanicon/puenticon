@@ -8,8 +8,8 @@ export default function IconLoginBtn({ handleWalletSelect }: IconLoginType) {
     window.dispatchEvent(
       new CustomEvent("ICONEX_RELAY_REQUEST", {
         detail: {
-          type: "REQUEST_ADDRESS"
-        }
+          type: "REQUEST_ADDRESS",
+        },
       })
     );
   }
@@ -46,7 +46,10 @@ export default function IconLoginBtn({ handleWalletSelect }: IconLoginType) {
 
   return (
     <div className={styles.btnContainer} onClick={handleLogin}>
-      <img src="menu.png" alt="menu button" />
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="white">
+        <path d="M6 36v-3h36v3Zm0-10.5v-3h36v3ZM6 15v-3h36v3Z" />
+      </svg>
+      {/* <img src="menu.png" alt="menu button" /> */}
     </div>
   );
 }

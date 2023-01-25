@@ -29,11 +29,11 @@
 }
 .walletSelectInputContainerGreen {
   border-radius: 2px;
-  border: 3px solid green;
+  border: 1px solid green;
 }
 .walletSelectInputContainerRed {
   border-radius: 2px;
-  border: 3px solid red;
+  border: 1px solid red;
 }
 .walletSelectButton,
 .walletSelectStatus {
@@ -53,4 +53,6 @@
   white-space: nowrap;
   overflow: hidden;
   min-width: 50px;
+  background-color: rgba(46, 2, 109, 0.5);
+  color: white;
 }

@@ -2,9 +2,9 @@
   border-radius: 2px;
   border: 2px solid white;
   height: 30px;
-  background-color: white;
+  background-color: #2e026d;
 }
-.btnContainer > img {
+.btnContainer > svg {
   height: 100%;
 }
 .btnContainer:hover {
