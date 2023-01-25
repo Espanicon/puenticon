@@ -15,7 +15,7 @@ import {
   TokenType,
   WalletsType,
   ChainComponentType,
-  TxResultComponentType
+  TxResultComponentType,
 } from "../types";
 
 // DetailsSection imported with Next.js dynamic imports functionality
@@ -38,7 +38,7 @@ const CONTRACT_LIST = lib.buildContractList(CONTRACTS);
 const TOKENS_AVAILABLE: Partial<typeof lib.tokens> = [
   lib.tokenNames.icx,
   lib.tokenNames.sicx,
-  lib.tokenNames.bnb
+  lib.tokenNames.bnb,
   // lib.tokenNames.btcb,
   // lib.tokenNames.eth,
   // lib.tokenNames.bnusd,
@@ -49,7 +49,7 @@ const TOKENS_AVAILABLE: Partial<typeof lib.tokens> = [
 ];
 
 const iconInitTokenBalance: Array<TokenType> = TOKENS_AVAILABLE.map(
-  tokenName => {
+  (tokenName) => {
     return {
       token: tokenName!,
       label: "",
@@ -58,8 +58,8 @@ const iconInitTokenBalance: Array<TokenType> = TOKENS_AVAILABLE.map(
         locked: "0",
         refundable: "0",
         usable: "0",
-        userBalance: "0"
-      }
+        userBalance: "0",
+      },
     };
   }
 );
@@ -79,9 +79,8 @@ function Home() {
   const [methodCallTxResult, setMethodCallTxResult] = useState<any>(null);
   const [reclaimCallTxResult, setReclaimCallTxResult] = useState<any>(null);
   const [loginWallets, setLoginWallets] = useState<WalletsType>(WALLETS_INIT);
-  const [iconTokensBalance, setIconTokensBalance] = useState<Array<TokenType>>(
-    iconInitTokenBalance
-  );
+  const [iconTokensBalance, setIconTokensBalance] =
+    useState<Array<TokenType>>(iconInitTokenBalance);
   const [bscTokensBalance, setBscTokensBalance] = useState<any>(null);
 
   const txFlag = useRef<TxType>("");
@@ -98,7 +97,7 @@ function Home() {
       isModalOpen,
       transferTxResult,
       methodCallTxResult,
-      loginWallets
+      loginWallets,
     },
     "Home"
   );
@@ -204,9 +203,9 @@ function Home() {
   }
 
   async function handleTokenToRefund(token: TokenType) {
-    setIconTokensBalance(status => {
+    setIconTokensBalance((status) => {
       const result: Array<TokenType> = [];
-      status.forEach(eachToken => {
+      status.forEach((eachToken) => {
         if (eachToken.token === token.token) {
           result.push({ ...token, claiming: true });
         } else result.push(eachToken);
@@ -301,7 +300,7 @@ function Home() {
     useMainnet,
     amountToTransfer,
     targetAddress,
-    loginWallets
+    loginWallets,
   ]);
 
   useEffect(() => {
@@ -417,7 +416,7 @@ function Home() {
                     fromIcon={!fromIcon}
                     handle={handleOnChainFromBsc}
                   />
-                  <div className={styles.tokenContainer}>
+                  <div className={styles.chainContainer}>
                     <p>Token:</p>
                     <select
                       className={styles.selectFrom}
@@ -437,7 +436,7 @@ function Home() {
                 <div className={styles.targetContainer}>
                   <p>Target address:</p>
                   <input
-                    className={styles.inputAmount}
+                    className={styles.inputTarget}
                     type="text"
                     value={targetAddress === null ? "" : targetAddress}
                     onChange={handleOnTargetAddressChange}
@@ -450,22 +449,27 @@ function Home() {
                     }
                   />
                 </div>
-                <div className={styles.amountContainer}>
-                  <p>Amount:</p>
-                  <input
-                    className={styles.inputAmount}
-                    type="text"
-                    pattern="[0-9]*"
-                    value={amountToTransfer}
-                    onChange={handleAmountToTransferChange}
-                  />
-                </div>
               </div>
               <Hr />
-              <div className={styles.submitContainer}>
-                <button className={styles.submitBtn} onClick={handleOnTransfer}>
-                  Transfer
-                </button>
+              <div className={styles.bottomContainer}>
+                <div className={styles.submitContainer}>
+                  <div className={styles.amountContainer}>
+                    <p>Amount:</p>
+                    <input
+                      className={styles.inputAmount}
+                      type="text"
+                      pattern="[0-9]*"
+                      value={amountToTransfer}
+                      onChange={handleAmountToTransferChange}
+                    />
+                  </div>
+                  <button
+                    className={styles.submitBtn}
+                    onClick={handleOnTransfer}
+                  >
+                    Transfer
+                  </button>
+                </div>
               </div>
             </div>
             <div className={styles.card}>
@@ -516,7 +520,7 @@ function TxModal({
   fromIcon,
   tokenToTransfer,
   transferTxResult,
-  methodCallTxResult
+  methodCallTxResult,
 }: TxModalType) {
   const header = fromIcon ? "ICON -> BSC" : "BSC -> ICON";
   return (
@@ -605,7 +609,7 @@ function TxResultComponent({ txResult, fromIcon }: TxResultComponentType) {
         if (txResult.result == null) {
           message = `Error response from chain: ${JSON.stringify({
             code: txResult.code,
-            message: txResult.message
+            message: txResult.message,
           })}`;
         } else {
           message = `Tx hash result:${txResult.hash}`;

@@ -20,7 +20,7 @@ function handleLoginGeneral(wallet: string, setArr: any, setSelected: any) {
 
 export default function WalletSelect({
   chain = "icon",
-  handleWalletsChange
+  handleWalletsChange,
 }: WalletProps) {
   const [selectedBscWallet, setSelectedBscWallet] = useState<null | string>(
     null
@@ -97,7 +97,7 @@ function WalletSelectSubComponent({
   handleSelectChange,
   arrWallets,
   handleLogin,
-  chain
+  chain,
 }: WalletSelectSubComponentType) {
   return (
     <div className={styles.walletSelectMain}>
@@ -117,7 +117,7 @@ function WalletSelectSubComponent({
             id={`selectListIcon-${chain}`}
             className={styles.select}
             value={selectedWallet === null ? defaultStr : selectedWallet}
-            onChange={evnt => handleSelectChange(evnt, chain)}
+            onChange={(evnt) => handleSelectChange(evnt, chain)}
             placeholder={defaultStr}
           >
             {arrWallets.map((wallet, index) => {
