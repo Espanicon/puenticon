@@ -5,8 +5,8 @@
   justify-content: center;
   min-height: 100vh;
   min-width: 480px;
-  /* background-image: linear-gradient(to bottom, #2e026d, #15162c); */
-  background-image: linear-gradient(to bottom, #2e026d, #131f08);
+  background-color: transparent;
+  /* background-image: linear-gradient(to bottom, #2e026d, #131f08); */
 }
 
 .networkSelection {
