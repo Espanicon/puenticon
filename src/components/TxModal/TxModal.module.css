@@ -22,3 +22,14 @@
   background-color: #ccc;
   transform: translateY(1px);
 }
+
+.imageContainer {
+  height: 60px;
+  width: 60px;
+}
+
+.imageHandlerContainer {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+}

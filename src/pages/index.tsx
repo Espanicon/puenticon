@@ -375,10 +375,11 @@ function Home() {
         onClickHandler={setIsModalOpen}
         // fromIcon={fromIcon}
         // tokenToTransfer={tokenToTransfer}
-        transferTxResult={transferTxResult}
+        // transferTxResult={transferTxResult}
         methodCallTxResult={methodCallTxResult}
         fromIcon={true}
-        tokenToTransfer={"sICX"}
+        tokenToTransfer={"ICX"}
+        transferTxResult={true}
       />
       <main className={styles.main}>
         <div className={styles.networkSelection}>
