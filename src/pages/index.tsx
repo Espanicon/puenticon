@@ -370,16 +370,17 @@ function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <TxModal2
-        isOpen={true}
+        // isOpen={isModalOpen}
         onClose={handleModalClose}
         onClickHandler={setIsModalOpen}
         // fromIcon={fromIcon}
         // tokenToTransfer={tokenToTransfer}
         // transferTxResult={transferTxResult}
         methodCallTxResult={methodCallTxResult}
+        isOpen={true}
         fromIcon={true}
         tokenToTransfer={"ICX"}
-        transferTxResult={true}
+        transferTxResult={null}
       />
       <main className={styles.main}>
         <div className={styles.networkSelection}>
