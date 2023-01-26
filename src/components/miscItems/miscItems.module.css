@@ -48,10 +48,13 @@
   align-items: center;
   justify-content: center;
 }
+.imgLoadingBig {
+  height: 5rem;
+}
 
 .imgLoadingItem {
-  height: 40%;
-  width: 3px;
+  height: 100%;
+  width: 4px;
   border-radius: 3px;
   background-color: #eb5900;
   margin-right: 2px;
@@ -60,21 +63,21 @@
 
 .imgLoadingItem:nth-child(1) {
   animation-delay: 0.2s;
-  height: 12%;
+  height: 40%;
 }
 .imgLoadingItem:nth-child(2) {
   animation-delay: 0.1s;
-  height: 25%;
+  height: 80%;
 }
 .imgLoadingItem:nth-child(3) {
 }
 .imgLoadingItem:nth-child(4) {
   animation-delay: 0.1s;
-  height: 25%;
+  height: 80%;
 }
 .imgLoadingItem:nth-child(5) {
   animation-delay: 0.2s;
-  height: 12%;
+  height: 40%;
 }
 @keyframes wave {
   0% {

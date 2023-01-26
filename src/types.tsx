@@ -1,18 +1,18 @@
 import type { ReactNode, ChangeEventHandler } from "react";
-import lib from './lib/lib'
+import lib from "./lib/lib";
 
-export type Tokens = typeof lib.tokens[number];
+export type Tokens = (typeof lib.tokens)[number];
 
 export interface CustomEventType extends Event {
   detail: {
     type: string;
     payload: string;
-  }
+  };
 }
 
 declare global {
   interface WindowEventMap {
-    "ICONEX_RELAY_RESPONSE": CustomEventType
+    ICONEX_RELAY_RESPONSE: CustomEventType;
   }
 }
 
@@ -60,7 +60,7 @@ export type TxResultComponentType = {
 export type WalletProps = {
   chain?: string;
   handleWalletsChange: any;
-}
+};
 
 export type BscLoginType = {
   handleWalletSelect: (wallet: string) => void;
@@ -112,7 +112,7 @@ export type BscParams = {
   gas: string;
   data: string;
   value: string;
-}
+};
 
 export type BscBalanceOfReply = {
   _usableBalance: string;
@@ -120,18 +120,27 @@ export type BscBalanceOfReply = {
   _refundableBalance: string;
   _userBalance: string;
   error?: any;
-}
+};
 
 export type IconBalanceOfReply = {
   result: {
     [key: string]: string;
-  }
-}
+  };
+};
 
 export type Url = {
   protocol: "https" | "http";
   hostname: string | null;
   path: string | null;
   port: string | null;
-}
+};
 
+export type TxModalType = {
+  isOpen: boolean;
+  onClose: any;
+  onClickHandler: any;
+  fromIcon: boolean;
+  tokenToTransfer: string | undefined;
+  transferTxResult: any;
+  methodCallTxResult: any;
+};

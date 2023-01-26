@@ -4,9 +4,19 @@ export function Hr() {
   return <div className={styles.hr}></div>;
 }
 
-export function LoadingComponent() {
+type LoadingComponentType = {
+  useBig?: boolean;
+};
+
+export function LoadingComponent({ useBig = false }: LoadingComponentType) {
   return (
-    <div className={styles.imgLoading}>
+    <div
+      className={
+        useBig
+          ? `${styles.imgLoading} ${styles.imgLoadingBig}`
+          : `${styles.imgLoading}`
+      }
+    >
       {[1, 2, 3, 4, 5].map((foo, index) => (
         <div className={styles.imgLoadingItem} key={`foo-key-${index}`}></div>
       ))}
