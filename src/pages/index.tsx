@@ -264,6 +264,17 @@ function Home() {
     if (payload != null && payload.result != null) {
       txResult = await lib.getTxResult(payload.result, useMainnet);
     }
+
+    if (payload.code != null && payload.message != null) {
+      txResult = {
+        txHash: null,
+        failure: {
+          code: payload.code,
+          message: payload.message,
+        },
+      };
+    }
+
     // switch case for every type of event raised
     switch (type) {
       case "RESPONSE_JSON-RPC":
@@ -421,7 +432,7 @@ function Home() {
             value={useMainnet ? "mainnet" : "testnet"}
             onChange={handleOnNetworkChange}
           >
-            <option value="mainnet">Mainnet</option>
+            {/* <option value="mainnet">Mainnet</option> */}
             <option value="testnet">Testnet</option>
           </select>
         </div>
@@ -498,7 +509,12 @@ function Home() {
                     />
                   </div>
                   <button
-                    className={styles.submitBtn}
+                    disabled={!targetStatus}
+                    className={
+                      !targetStatus
+                        ? `${styles.submitBtn} ${styles.submitBtnDisabled}`
+                        : `${styles.submitBtn}`
+                    }
                     onClick={handleOnTransfer}
                   >
                     Transfer

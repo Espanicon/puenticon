@@ -317,7 +317,16 @@
   margin-left: 5px;
 }
 
+.submitBtnDisabled {
+  background-color: #ccc;
+}
+
 .submitBtn:hover {
   background-color: #e4a15f;
   transform: translateY(1px);
+}
+
+.submitBtnDisabled:hover {
+  background-color: #ccc;
+  transform: none;
 }
