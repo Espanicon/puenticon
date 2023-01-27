@@ -2,6 +2,9 @@
 
 Puenticon is a web3 application for transfering assets between the ICON and BSC chains.
 
+![Puenticon screen](/public/puenticon.png)
+
+
 ## Local development.
 
 For running this project locally clone the github repository and then run `npm install` inside the root folder of the project.
