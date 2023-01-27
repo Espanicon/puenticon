@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import styles from "./index.module.css";
 import { Hr } from "../components/miscItems/miscItems";
 import WalletSelect from "../components/WalletSelect/WalletSelect";
-import { TxModal, TxModal2 } from "../components/TxModal/TxModal";
+import { TxModal2 } from "../components/TxModal/TxModal";
 // import DetailsSection from "../components/DetailsSection/DetailsSection";
 import Head from "next/head";
 import lib from "../lib/lib";
@@ -63,6 +63,17 @@ const iconInitTokenBalance: Array<TokenType> = TOKENS_AVAILABLE.map(
   }
 );
 
+const initRefParams = {
+  iconWallet: null,
+  bscWallet: null,
+  from: null,
+  to: null,
+  token: null,
+  target: null,
+  amount: null,
+  fromIcon: null,
+};
+
 // main component
 function Home() {
   const [fromIcon, setFromIcon] = useState<boolean>(true);
@@ -108,7 +119,26 @@ function Home() {
   }
 
   function handleWalletsChange(wallets: WalletsType) {
-    return helpers.handleWalletsChange(wallets, setLoginWallets);
+    const typeOfWallet = Object.keys(wallets)[0];
+
+    setLoginWallets((state) => {
+      if (typeOfWallet === "icon") {
+        return {
+          ...state,
+          icon: wallets.icon,
+        };
+      } else if (typeOfWallet === "bsc") {
+        return {
+          ...state,
+          bsc: wallets.bsc,
+        };
+      } else {
+        return {
+          icon: "ERROR",
+          bsc: "ERROR",
+        };
+      }
+    });
   }
 
   function handleModalClose() {
@@ -370,17 +400,18 @@ function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <TxModal2
-        // isOpen={isModalOpen}
+        isOpen={isModalOpen}
         onClose={handleModalClose}
         onClickHandler={setIsModalOpen}
-        // fromIcon={fromIcon}
-        // tokenToTransfer={tokenToTransfer}
-        // transferTxResult={transferTxResult}
+        fromIcon={fromIcon}
+        tokenToTransfer={tokenToTransfer}
+        transferTxResult={transferTxResult}
         methodCallTxResult={methodCallTxResult}
-        isOpen={true}
-        fromIcon={true}
-        tokenToTransfer={"ICX"}
-        transferTxResult={null}
+        //
+        // isOpen={true}
+        // fromIcon={true}
+        // tokenToTransfer={"ICX"}
+        // transferTxResult={null}
       />
       <main className={styles.main}>
         <div className={styles.networkSelection}>

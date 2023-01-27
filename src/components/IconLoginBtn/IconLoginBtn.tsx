@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import styles from "./IconLoginBtn.module.css";
-import { IconLoginType, CustomEventType } from "../../types";
+import { CustomEventType, WalletsObjType } from "../../types";
 
-export default function IconLoginBtn({ handleWalletSelect }: IconLoginType) {
+export default function IconLoginBtn({ handleWalletSelect }: any) {
   function handleLogin() {
     // event dispatcher for ICON wallets
     window.dispatchEvent(

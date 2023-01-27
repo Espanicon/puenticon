@@ -1,4 +1,4 @@
-import type { ReactNode, ChangeEventHandler } from "react";
+import type { ReactNode, ChangeEventHandler, Dispatch } from "react";
 import lib from "./lib/lib";
 
 export type Tokens = (typeof lib.tokens)[number];
@@ -62,11 +62,29 @@ export type WalletProps = {
   handleWalletsChange: any;
 };
 
+export type WalletsObjType = {
+  icon: string;
+  bsc: string;
+};
+
 export type BscLoginType = {
-  handleWalletSelect: (wallet: string) => void;
+  handleWalletSelect: (wallet: WalletsObjType) => void;
 };
 
 export type IconLoginType = BscLoginType;
+
+export type IconLoginDispatch = {
+  handleWalletSelect: Dispatch<WalletsObjType>;
+};
+
+export type HandleWalletSelectType = (state: WalletsObjType) => void;
+
+export type IconLoginDispatch2 = {
+  handleWalletSelect: HandleWalletSelectType;
+};
+
+// export type IconLoginPropsTypes = IconLoginDispatch | IconLoginDispatch2;
+export type IconLoginPropsTypes = IconLoginDispatch2;
 
 export type GenericModalType = {
   isOpen: boolean;
