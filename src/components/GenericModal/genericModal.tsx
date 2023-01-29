@@ -1,12 +1,12 @@
 import type { MouseEvent } from "react";
-import { GenericModalType } from '../../types';
+import { GenericModalType } from "../../types";
 import styles from "./genericModal.module.css";
 
 export default function GenericModal({
   isOpen,
   onClose,
   useSmall = false,
-  children
+  children,
 }: GenericModalType) {
   function handleOnClose() {
     onClose();
@@ -17,16 +17,16 @@ export default function GenericModal({
   }
   return (
     <div
-      className={`${styles.modal} ${
-        isOpen ? styles.modalOpen : styles.modalClosed
+      className={`${styles.modal!} ${
+        isOpen ? styles.modalOpen! : styles.modalClosed!
       }`}
       onClick={handleOnClose}
     >
       <div
         className={
           useSmall
-            ? `${styles.main} ${styles.mainSmall}`
-            : `${styles.main} ${styles.mainBig}`
+            ? `${styles.main!} ${styles.mainSmall!}`
+            : `${styles.main!} ${styles.mainBig!}`
         }
         onClick={onMainClick}
       >

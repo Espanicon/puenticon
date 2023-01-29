@@ -1,10 +1,20 @@
-import { useState } from "react";
+import { useState, ChangeEvent } from "react";
 import IconLoginBtn from "../IconLoginBtn/IconLoginBtn";
 import BscLoginBtn from "../BscLoginBtn/BscLoginBtn";
 import styles from "./WalletSelect.module.css";
 import { WalletProps } from "../../types";
 
-function handleLoginGeneral(wallet: string, setArr: any, setSelected: any) {
+interface SetArr<T> {
+  (arg: T): T;
+}
+
+function handleLoginGeneral(
+  wallet: string,
+  setArr: (arg: SetArr<string[]>) => void,
+  setSelected: (arg: string) => void
+) {
+  // const { wallet, setArr, setSelected } = props;
+
   // update array of wallets in the options of the select component
   setArr((state: string[]) => {
     if (state.includes(wallet)) {
@@ -48,7 +58,10 @@ export default function WalletSelect({
     handleWalletsChange({ bsc: wallet });
   }
 
-  function handleSelectChange(evnt: any, chain: string) {
+  function handleSelectChange(
+    evnt: ChangeEvent<HTMLSelectElement>,
+    chain: string
+  ) {
     if (chain === "icon") {
       setSelectedIconWallet(evnt.target.value);
       // pass selected wallet to parent component
@@ -85,9 +98,12 @@ export default function WalletSelect({
 type WalletSelectSubComponentType = {
   selectedWallet: string | null;
   defaultStr: string;
-  handleSelectChange: any;
+  handleSelectChange: (
+    evnt: ChangeEvent<HTMLSelectElement>,
+    chain: string
+  ) => void;
   arrWallets: string[];
-  handleLogin: any;
+  handleLogin: (wallet: string) => void;
   chain: string;
 };
 

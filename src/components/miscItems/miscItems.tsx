@@ -13,8 +13,8 @@ export function LoadingComponent({ useBig = false }: LoadingComponentType) {
     <div
       className={
         useBig
-          ? `${styles.imgLoading} ${styles.imgLoadingBig}`
-          : `${styles.imgLoading}`
+          ? `${styles.imgLoading!} ${styles.imgLoadingBig!}`
+          : `${styles.imgLoading!}`
       }
     >
       {[1, 2, 3, 4, 5].map((foo, index) => (

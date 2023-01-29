@@ -2,7 +2,7 @@ import { TokenType, TokenTableType } from "../../types";
 import { LoadingComponent } from "../miscItems/miscItems";
 import styles from "./TokenTable.module.css";
 
-function hexToDecimal(hex: string, decimals: number = 2) {
+function hexToDecimal(hex: string, decimals = 2) {
   const result = parseInt(hex, 16) / 10 ** 18;
   return result.toFixed(decimals);
 }
@@ -25,7 +25,7 @@ export default function TokenTable({
 
   function handleOnClick(token: TokenType, refundable: string) {
     if (refundable != "0x0") {
-      handleTokenToRefund(token);
+      void handleTokenToRefund(token);
     }
   }
   return (

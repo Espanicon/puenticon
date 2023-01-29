@@ -36,14 +36,14 @@ export type WalletsType = {
 export type TokenTableType = {
   tableLabel: string;
   tokens: Array<TokenType>;
-  handleTokenToRefund: any;
+  handleTokenToRefund: (token: TokenType) => Promise<void>;
 };
 
 export type DetailsSectionType = {
   wallets: WalletsType;
   iconWalletDetails: Array<TokenType>;
-  bscWalletDetails: any;
-  handleTokenToRefund: any;
+  bscWalletDetails: Array<TokenType>;
+  handleTokenToRefund: (token: TokenType) => Promise<void>;
 };
 
 export type ChainComponentType = {
@@ -52,23 +52,31 @@ export type ChainComponentType = {
   handle: ChangeEventHandler<HTMLSelectElement>;
 };
 
+export type DefaultTxResultType = {
+  txHash: null | string;
+  failure?: {
+    code: string;
+    message: string;
+  };
+};
+
 export type TxResultComponentType = {
-  txResult: any;
+  txResult: DefaultTxResultType;
   fromIcon: boolean;
 };
 
 export type WalletProps = {
   chain?: string;
-  handleWalletsChange: any;
+  handleWalletsChange: (wallets: WalletsObjType) => void;
 };
 
 export type WalletsObjType = {
-  icon: string;
-  bsc: string;
+  icon?: string | null;
+  bsc?: string | null;
 };
 
 export type BscLoginType = {
-  handleWalletSelect: (wallet: WalletsObjType) => void;
+  handleWalletSelect: (wallet: string) => void;
 };
 
 export type IconLoginType = BscLoginType;
@@ -159,6 +167,6 @@ export type TxModalType = {
   onClickHandler: any;
   fromIcon: boolean;
   tokenToTransfer: string | undefined;
-  transferTxResult: any;
-  methodCallTxResult: any;
+  transferTxResult: DefaultTxResultType | null;
+  methodCallTxResult: DefaultTxResultType | null;
 };

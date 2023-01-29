@@ -25,8 +25,10 @@ export function TxModal2({
       ? transferTxResult.failure == null
         ? true
         : false
-      : methodCallTxResult.failure != null || transferTxResult.failure != null
-      ? false
+      : methodCallTxResult != null && transferTxResult != null
+      ? methodCallTxResult.failure != null || transferTxResult.failure != null
+        ? false
+        : true
       : true;
 
   console.log("tx status");
@@ -143,6 +145,20 @@ export function TxModal2({
               Transfering {tokenToTransfer} from {from} to {to} chain.{" "}
               {transferTxResult === null ? `In Progress..` : `Done`}
             </li>
+            {transferTxResult == null ? (
+              <></>
+            ) : transferTxResult.failure == null ? (
+              <li>Tx Hash: {transferTxResult.txHash}</li>
+            ) : (
+              <li>
+                Error response from chain:{" "}
+                {JSON.stringify({
+                  code: transferTxResult.failure.code,
+                  message: transferTxResult.failure.message,
+                  txHash: transferTxResult.txHash,
+                })}
+              </li>
+            )}
           </ul>
         ) : (
           <ul className={styles.ul}>

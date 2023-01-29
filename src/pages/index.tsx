@@ -13,8 +13,9 @@ import {
   Tokens,
   TxType,
   TokenType,
-  WalletsType,
+  WalletsObjType,
   ChainComponentType,
+  DefaultTxResultType,
 } from "../types";
 
 // DetailsSection imported with Next.js dynamic imports functionality
@@ -85,10 +86,13 @@ function Home() {
   const [targetAddress, setTargetAddress] = useState<string | null>(null);
   const [targetStatus, setTargetStatus] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [transferTxResult, setTransferTxResult] = useState<any>(null);
-  const [methodCallTxResult, setMethodCallTxResult] = useState<any>(null);
+  const [transferTxResult, setTransferTxResult] =
+    useState<DefaultTxResultType | null>(null);
+  const [methodCallTxResult, setMethodCallTxResult] =
+    useState<DefaultTxResultType | null>(null);
   const [reclaimCallTxResult, setReclaimCallTxResult] = useState<any>(null);
-  const [loginWallets, setLoginWallets] = useState<WalletsType>(WALLETS_INIT);
+  const [loginWallets, setLoginWallets] =
+    useState<WalletsObjType>(WALLETS_INIT);
   const [iconTokensBalance, setIconTokensBalance] =
     useState<Array<TokenType>>(iconInitTokenBalance);
   const [bscTokensBalance, setBscTokensBalance] = useState<any>(null);
@@ -118,7 +122,7 @@ function Home() {
     setReclaimCallTxResult(null);
   }
 
-  function handleWalletsChange(wallets: WalletsType) {
+  function handleWalletsChange(wallets: WalletsObjType) {
     const typeOfWallet = Object.keys(wallets)[0];
 
     setLoginWallets((state) => {
@@ -189,36 +193,65 @@ function Home() {
     } else {
       if (result.bscQuery != null) {
         setIsModalOpen(true);
+        // fetch the appropiate sdk depending of the network
+        const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
         const txHash = await helpers.dispatchBscTransfer(result.bscQuery);
+        console.log("wallet response");
+        console.log(txHash);
         if (result.type === "transfer") {
           // if the transaction of calling transferNativeCoin
-          setTransferTxResult(txHash);
+          if (typeof txHash.txHash === "string") {
+            const txResult = await lib.getBscTxResult(
+              txHash.txHash,
+              localSdk.params.bscProvider.hostname
+            );
+            setTransferTxResult(txResult);
+          } else {
+            setTransferTxResult(txHash);
+          }
         } else if (result.type === "methodCall") {
           // if the tx is calling `approveTransfer`
-          setMethodCallTxResult(txHash);
-
-          // fetch the appropiate sdk depending of the network
-          const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
 
           // make cross chain transaction of the token
-          const txResult = await lib.getBscTxResult(
-            txHash,
-            localSdk.params.bscProvider.hostname
-          );
-          if (txResult == null) {
-            setTransferTxResult(
-              "ERROR: unexpected error while trying to make transfer"
+          if (typeof txHash.txHash === "string") {
+            const txResult = await lib.getBscTxResult(
+              txHash.txHash,
+              localSdk.params.bscProvider.hostname
             );
-          } else {
+            setMethodCallTxResult(txResult);
+
             //dispatch second bsc tx. token transfer tx.
             if (result.bscQuery2 == null) {
-              setTransferTxResult("ERROR: second tx object is null");
+              setTransferTxResult({
+                txHash: null,
+                failure: {
+                  code: "0",
+                  message: "ERROR: second tx object is null",
+                },
+              });
             } else {
               const txHash2 = await helpers.dispatchBscTransfer(
                 result.bscQuery2
               );
-              setTransferTxResult(txHash2);
+              let txResult2 = txHash2;
+              if (typeof txHash2.txHash === "string") {
+                txResult2 = await lib.getBscTxResult(
+                  txHash2.txHash,
+                  localSdk.params.bscProvider.hostname
+                );
+              }
+              setTransferTxResult(txResult2);
             }
+          } else {
+            setMethodCallTxResult(txHash);
+            // setMethodCallTxResult({
+            //   txHash: null,
+            //   failure: {
+            //     code: "0",
+            //     message:
+            //       "ERROR: unexpected error while trying to make transfer",
+            //   },
+            // });
           }
         } else {
           // should never happen
@@ -249,7 +282,6 @@ function Home() {
       sdkTestnet,
       sdkMainnet
     );
-    console.log(queryObj);
     txFlag.current = "reclaimCall";
     helpers.dispatchTxEvent(queryObj);
   }
@@ -344,31 +376,26 @@ function Home() {
   ]);
 
   useEffect(() => {
-    if (loginWallets.icon != null) {
-      helpers.getIconTokensBalance(
-        loginWallets,
-        useMainnet,
-        TOKENS_AVAILABLE,
-        setIconTokensBalance,
-        sdkTestnet,
-        sdkMainnet
-      );
-    } else if (loginWallets.bsc != null) {
-      helpers.getBscTokensBalance(
-        loginWallets,
-        useMainnet,
-        TOKENS_AVAILABLE,
-        setBscTokensBalance,
-        sdkTestnet,
-        sdkMainnet
-      );
-    }
+    // if (loginWallets.icon != null) {
+    //   helpers.getIconTokensBalance(
+    //     loginWallets,
+    //     useMainnet,
+    //     TOKENS_AVAILABLE,
+    //     setIconTokensBalance,
+    //     sdkTestnet,
+    //     sdkMainnet
+    //   );
+    // } else if (loginWallets.bsc != null) {
+    //   helpers.getBscTokensBalance(
+    //     loginWallets,
+    //     useMainnet,
+    //     TOKENS_AVAILABLE,
+    //     setBscTokensBalance,
+    //     sdkTestnet,
+    //     sdkMainnet
+    //   );
+    // }
   }, [loginWallets]);
-
-  useEffect(() => {
-    console.log("bsc tokens balance");
-    console.log(bscTokensBalance);
-  }, [bscTokensBalance]);
 
   useEffect(() => {
     if (targetAddress !== null) {
@@ -522,14 +549,14 @@ function Home() {
                 </div>
               </div>
             </div>
-            <div className={styles.card}>
-              <DetailsSection
-                wallets={loginWallets}
-                iconWalletDetails={iconTokensBalance}
-                bscWalletDetails={bscTokensBalance}
-                handleTokenToRefund={handleTokenToRefund}
-              />
-            </div>
+            {/* <div className={styles.card}> */}
+            {/*   <DetailsSection */}
+            {/*     wallets={loginWallets} */}
+            {/*     iconWalletDetails={iconTokensBalance} */}
+            {/*     bscWalletDetails={bscTokensBalance} */}
+            {/*     handleTokenToRefund={handleTokenToRefund} */}
+            {/*   /> */}
+            {/* </div> */}
           </div>
         </div>
       </main>

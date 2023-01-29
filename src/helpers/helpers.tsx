@@ -6,10 +6,10 @@ import {
   JSONRPCType,
   TxType,
   TokenType,
-  WalletsType,
+  WalletsObjType,
   BscParams,
   IconBalanceOfReply,
-  BscBalanceOfReply
+  BscBalanceOfReply,
 } from "../types";
 
 // import IconBridgeSDK from "@espanicon/icon-bridge-sdk-js";
@@ -18,28 +18,26 @@ import {
 // const sdkTestnet = new IconBridgeSDK({ useMainnet: false });
 // const sdkMainnet = new IconBridgeSDK({ useMainnet: true });
 
-export const WALLETS_INIT: WalletsType = {
+export const WALLETS_INIT: WalletsObjType = {
   icon: null,
-  bsc: null
+  bsc: null,
 };
 
 // functions
 function dispatchTxEvent(txData: JSONRPCType) {
-  console.log("event tx data");
-  console.log(txData);
   window.dispatchEvent(
     new CustomEvent("ICONEX_RELAY_REQUEST", {
       detail: {
         type: "REQUEST_JSON-RPC",
-        payload: txData
-      }
+        payload: txData,
+      },
     })
   );
 }
 
 function handleWalletsChange(
-  wallets: WalletsType,
-  setLoginWallets: Dispatch<WalletsType>
+  wallets: WalletsObjType,
+  setLoginWallets: Dispatch<WalletsObjType>
 ) {
   setLoginWallets(wallets);
 }
@@ -114,7 +112,7 @@ function handleOnNetworkChange(
 }
 
 async function refundIconTokenBalance(
-  loginWallets: WalletsType,
+  loginWallets: WalletsObjType,
   useMainnet: boolean,
   tokenData: TokenType,
   sdkTestnet: any,
@@ -135,7 +133,7 @@ async function refundIconTokenBalance(
 }
 
 async function getBscTokensBalance(
-  loginWallets: WalletsType,
+  loginWallets: WalletsObjType,
   useMainnet: boolean,
   arrOfTokens: Partial<typeof lib.tokens>,
   callback: Dispatch<Array<TokenType>>,
@@ -144,27 +142,23 @@ async function getBscTokensBalance(
 ) {
   try {
     const wallet = loginWallets.bsc;
-    console.log("wallets");
-    console.log(wallet);
     const localSdk = useMainnet ? sdkMainnet.bsc : sdkTestnet.bsc;
     const result = [];
     for (const token of arrOfTokens) {
       if (token != null) {
         const tokenLabel = lib.getBtpCoinName(token, useMainnet);
-        const rawQuery = ((await localSdk.methods.balanceOf(
+        const rawQuery = (await localSdk.methods.balanceOf(
           wallet,
           tokenLabel
-        )) as unknown) as BscBalanceOfReply;
+        )) as unknown as BscBalanceOfReply;
         if (rawQuery == null || rawQuery.error != null) {
           throw new Error("Error fetching balance of tokens on BSC chain");
         }
-        console.log("bsc raw query");
-        console.log(rawQuery);
-        const query = (lib.formatBscBalanceResponse(
+        const query = lib.formatBscBalanceResponse(
           rawQuery
-        ) as unknown) as IconBalanceOfReply;
+        ) as unknown as IconBalanceOfReply;
         if (query != null) {
-          const arrBalances = (Object.keys(query.result) as unknown) as any[];
+          const arrBalances = Object.keys(query.result) as unknown as any[];
           const parsedBalances: { [key: string]: string } = {};
           for (const typeOfBalance of arrBalances) {
             const rawBalance = query.result[typeOfBalance];
@@ -175,13 +169,11 @@ async function getBscTokensBalance(
             token: token,
             label: tokenLabel,
             claiming: false,
-            balance: { ...parsedBalances }
+            balance: { ...parsedBalances },
           });
         }
       }
     }
-    console.log("bsc balance");
-    console.log(result);
     callback(result);
   } catch (err) {
     console.log("error fetching bsc balance");
@@ -190,7 +182,7 @@ async function getBscTokensBalance(
 }
 
 async function getIconTokensBalance(
-  loginWallets: WalletsType,
+  loginWallets: WalletsObjType,
   useMainnet: boolean,
   arrOfTokens: Partial<typeof lib.tokens>,
   callback: Dispatch<Array<TokenType>>,
@@ -203,12 +195,10 @@ async function getIconTokensBalance(
   for (const token of arrOfTokens) {
     if (token != null) {
       const tokenLabel = lib.getBtpCoinName(token, useMainnet);
-      const query = ((await localSdk.methods.balanceOf(
+      const query = (await localSdk.methods.balanceOf(
         wallet,
         tokenLabel
-      )) as unknown) as QueryType;
-      console.log("query balance");
-      console.log(query);
+      )) as unknown as QueryType;
       if (query != null) {
         const arrBalances = Object.keys(query.result);
         const parsedBalances: {
@@ -223,7 +213,7 @@ async function getIconTokensBalance(
           token: token,
           label: tokenLabel,
           claiming: false,
-          balance: { ...parsedBalances }
+          balance: { ...parsedBalances },
         });
       }
     }
@@ -233,7 +223,7 @@ async function getIconTokensBalance(
 
 async function handleOnTransfer(
   fromIcon: boolean,
-  loginWallets: WalletsType,
+  loginWallets: WalletsObjType,
   targetStatus: boolean,
   tokenToTransfer: Tokens,
   amountToTransfer: string,
@@ -243,8 +233,6 @@ async function handleOnTransfer(
   sdkMainnet: any,
   sdkContracts: any
 ) {
-  console.log("amountToTransfer");
-  console.log(amountToTransfer);
   const result: {
     iconQuery: null | JSONRPCType;
     bscQuery: null | BscParams;
@@ -254,7 +242,7 @@ async function handleOnTransfer(
     iconQuery: null,
     bscQuery: null,
     bscQuery2: null,
-    type: ""
+    type: "",
   };
 
   if (
@@ -313,7 +301,6 @@ async function handleOnTransfer(
             loginWallets.icon
           );
           result.type = "methodCall";
-          console.log(result.iconQuery);
         }
       }
     } else {
@@ -377,11 +364,10 @@ async function dispatchSecondTx(
   useMainnet: boolean,
   amountToTransfer: string,
   targetAddress: string,
-  loginWallets: WalletsType,
+  loginWallets: WalletsObjType,
   sdkTestnet: any,
   sdkMainnet: any
 ) {
-  console.log("dispatch second tx");
   if (typeof tokenToTransfer === "string") {
     const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
     const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
@@ -395,25 +381,56 @@ async function dispatchSecondTx(
       targetChain,
       targetAddress
     );
-    console.log("second query");
-    console.log(query);
     dispatchTxEvent(query);
   }
 }
 
+type RequestResponse = {
+  code: string;
+  message: string;
+};
+
 async function dispatchBscTransfer(params: BscParams) {
+  console.log("bsc dispatch params");
+  console.log(params);
+  let response: string | null | RequestResponse = null;
   try {
-    console.log("params");
-    console.log(params);
-    const txHash = await window.ethereum.request({
+    response = await window.ethereum.request({
       method: "eth_sendTransaction",
-      params: [params]
+      params: [params],
     });
 
-    return txHash;
-  } catch (err) {
+    console.log("txHash response");
+    console.log(response);
+
+    if (typeof response == "string") {
+      return {
+        txHash: response,
+      };
+    } else if (response == null) {
+      return {
+        txHash: null,
+        failure: {
+          code: "0",
+          message: "Unexpected Error",
+        },
+      };
+    } else {
+      return {
+        txHash: null,
+        failure: response,
+      };
+    }
+  } catch (err: any) {
+    console.log("Error dispatching Tx to metamask");
     console.log(err);
-    return err;
+    return {
+      txHash: null,
+      failure: { code: err.code, message: err.message },
+    };
+  } finally {
+    console.log("finally block");
+    console.log(response);
   }
 }
 
@@ -431,5 +448,5 @@ export const helpers = {
   getIconTokensBalance,
   getBscTokensBalance,
   refundIconTokenBalance,
-  dispatchBscTransfer
+  dispatchBscTransfer,
 };
