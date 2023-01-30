@@ -1,4 +1,4 @@
-import { TxModalType, TxResultComponentType } from "../../types";
+import type { TxModalType, TxResultComponentType } from "../../types";
 import GenericModal from "../GenericModal/genericModal";
 import { LoadingComponent } from "../miscItems/miscItems";
 import lib from "../../lib/lib";

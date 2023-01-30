@@ -10,6 +10,7 @@ import {
   BscParams,
   IconBalanceOfReply,
   BscBalanceOfReply,
+  IconBridgeSDKType,
 } from "../types";
 
 // import IconBridgeSDK from "@espanicon/icon-bridge-sdk-js";
@@ -115,10 +116,10 @@ async function refundIconTokenBalance(
   loginWallets: WalletsObjType,
   useMainnet: boolean,
   tokenData: TokenType,
-  sdkTestnet: any,
-  sdkMainnet: any
+  sdkTestnet: IconBridgeSDKType,
+  sdkMainnet: IconBridgeSDKType
 ) {
-  const wallet = loginWallets.icon;
+  const wallet = loginWallets.icon!;
   const localSdk = useMainnet ? sdkMainnet.icon : sdkTestnet.icon;
   const tokenLabel = lib.getBtpCoinName(tokenData.token, useMainnet);
   const refundableBalance = tokenData.balance.refundable!;

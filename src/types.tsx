@@ -1,5 +1,23 @@
 import type { ReactNode, ChangeEventHandler, Dispatch } from "react";
+// import type IconBridgeSDK from "@espanicon/icon-bridge-sdk-js";
 import lib from "./lib/lib";
+
+export interface IconBridgeSDKType {
+  icon: {
+    web: {
+      reclaim: (
+        arg1: string,
+        arg2: string,
+        arg3: WalletsObjType["icon"]
+      ) => JSONRPCType;
+    };
+  };
+  bsc: {
+    web: {
+      reclaim: (arg1: string, arg2: string, arg3: string) => JSONRPCType;
+    };
+  };
+}
 
 export type Tokens = (typeof lib.tokens)[number];
 
@@ -163,8 +181,8 @@ export type Url = {
 
 export type TxModalType = {
   isOpen: boolean;
-  onClose: any;
-  onClickHandler: any;
+  onClose: () => void;
+  onClickHandler: Dispatch<boolean>;
   fromIcon: boolean;
   tokenToTransfer: string | undefined;
   transferTxResult: DefaultTxResultType | null;
