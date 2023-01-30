@@ -1,10 +1,12 @@
 import { useRef, useEffect } from "react";
 import EspaniconSDKWeb from "@espanicon/espanicon-sdk";
-import {
+import type {
   BscBalanceOfReply,
   IconBalanceOfReply,
   Url,
-  DefaultTxResultType,
+  ContractListType,
+  ContractListType2,
+  // DefaultTxResultType,
 } from "../types";
 
 const RPC_NODES = {
@@ -74,9 +76,52 @@ const iconTokens = {
   ],
 };
 
-function buildContractList(sdkContracts: any) {
+// type ContractListType = {
+//   [key: string]: {
+//     [key: string]: string;
+//   };
+// };
+
+// function buildContractList(sdkContracts: ContractListType2) {
+//   const chains = Object.keys(sdkContracts);
+//   const result: ContractListType = {
+//     icon: {},
+//     bsc: {},
+//   };
+
+//   for (const chain of chains) {
+//     const chainTs = chain as keyof typeof sdkContracts;
+//     result[chainTs] = {};
+//     const networks = Object.keys(sdkContracts[chainTs]);
+//     const networksTs = sdkContracts[chainTs];
+//     for (const network of networks) {
+//       const networkTs = network as keyof typeof networksTs;
+//       const tokens = Object.keys(sdkContracts[chainTs][networkTs]);
+//       const tokensTs = networksTs[networkTs];
+//       for (const token of tokens) {
+//         const tokenTs = token as keyof typeof tokensTs;
+//         if (result[chain] !== undefined) {
+//           // eslint-disable-next-line
+//           if (result?[chainTs][tokenTs] == null) {
+//             result[chainTs][tokenTs] = {
+//               [network]: sdkContracts[chain][network][token].address,
+//             };
+//           } else {
+//             result[chain][token] = {
+//               ...result[chain][token],
+//               [network]: sdkContracts[chain][network][token].address,
+//             };
+//           }
+//         }
+//       }
+//     }
+//   }
+//   return result;
+// }
+
+function buildContractList(sdkContracts: ContractListType2) {
   const chains = Object.keys(sdkContracts);
-  const result: any = {};
+  const result: ContractListType = {};
 
   for (const chain of chains) {
     result[chain] = {};
@@ -86,8 +131,11 @@ function buildContractList(sdkContracts: any) {
       for (const token of tokens) {
         if (result[chain][token] == null) {
           result[chain][token] = {
-            [network]: sdkContracts[chain][network][token].address,
+            mainnet: "",
+            testnet: "",
           };
+          result[chain][token][network] =
+            sdkContracts[chain][network][token].address;
         } else {
           result[chain][token] = {
             ...result[chain][token],
@@ -334,9 +382,9 @@ function hexToDecimal(hex: string) {
   return parseInt(hex, 16);
 }
 
-function formatBscBalanceResponse(
-  rawBalance: BscBalanceOfReply
-): IconBalanceOfReply {
+function formatBscBalanceResponse(rawBalance: BscBalanceOfReply): {
+  result: IconBalanceOfReply;
+} {
   return {
     result: {
       locked: rawBalance._lockedBalance,

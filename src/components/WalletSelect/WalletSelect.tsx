@@ -124,8 +124,8 @@ function WalletSelectSubComponent({
         <div
           className={
             selectedWallet === null
-              ? `${styles.walletSelectInputContainer!} ${styles.walletSelectInputContainerRed!}`
-              : `${styles.walletSelectInputContainer!} ${styles.walletSelectInputContainerGreen!}`
+              ? `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerRed}`
+              : `${styles.walletSelectInputContainer} ${styles.walletSelectInputContainerGreen}`
           }
         >
           <select

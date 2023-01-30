@@ -1,16 +1,16 @@
-import { Dispatch, ChangeEvent } from "react";
+import type { Dispatch, ChangeEvent } from "react";
 import lib from "../lib/lib";
-import {
+import type {
   Tokens,
-  QueryType,
   JSONRPCType,
   TxType,
   TokenType,
   WalletsObjType,
   BscParams,
-  IconBalanceOfReply,
-  BscBalanceOfReply,
   IconBridgeSDKType,
+  SdkContracts,
+  IconBalanceOfReply,
+  ContractListType,
 } from "../types";
 
 // import IconBridgeSDK from "@espanicon/icon-bridge-sdk-js";
@@ -138,8 +138,8 @@ async function getBscTokensBalance(
   useMainnet: boolean,
   arrOfTokens: Partial<typeof lib.tokens>,
   callback: Dispatch<Array<TokenType>>,
-  sdkTestnet: any,
-  sdkMainnet: any
+  sdkTestnet: IconBridgeSDKType,
+  sdkMainnet: IconBridgeSDKType
 ) {
   try {
     const wallet = loginWallets.bsc;
@@ -148,24 +148,13 @@ async function getBscTokensBalance(
     for (const token of arrOfTokens) {
       if (token != null) {
         const tokenLabel = lib.getBtpCoinName(token, useMainnet);
-        const rawQuery = (await localSdk.methods.balanceOf(
-          wallet,
-          tokenLabel
-        )) as unknown as BscBalanceOfReply;
+        const rawQuery = await localSdk.methods.balanceOf(wallet, tokenLabel);
         if (rawQuery == null || rawQuery.error != null) {
           throw new Error("Error fetching balance of tokens on BSC chain");
         }
-        const query = lib.formatBscBalanceResponse(
-          rawQuery
-        ) as unknown as IconBalanceOfReply;
+        const query = lib.formatBscBalanceResponse(rawQuery);
         if (query != null) {
-          const arrBalances = Object.keys(query.result) as unknown as any[];
-          const parsedBalances: { [key: string]: string } = {};
-          for (const typeOfBalance of arrBalances) {
-            const rawBalance = query.result[typeOfBalance];
-            // parseInt(query.result[typeOfBalance], 16) / 10 ** 18;
-            parsedBalances[typeOfBalance] = rawBalance!;
-          }
+          const parsedBalances = { ...query.result };
           result.push({
             token: token,
             label: tokenLabel,
@@ -187,8 +176,8 @@ async function getIconTokensBalance(
   useMainnet: boolean,
   arrOfTokens: Partial<typeof lib.tokens>,
   callback: Dispatch<Array<TokenType>>,
-  sdkTestnet: any,
-  sdkMainnet: any
+  sdkTestnet: IconBridgeSDKType,
+  sdkMainnet: IconBridgeSDKType
 ) {
   const wallet = loginWallets.icon;
   const localSdk = useMainnet ? sdkMainnet.icon : sdkTestnet.icon;
@@ -196,25 +185,13 @@ async function getIconTokensBalance(
   for (const token of arrOfTokens) {
     if (token != null) {
       const tokenLabel = lib.getBtpCoinName(token, useMainnet);
-      const query = (await localSdk.methods.balanceOf(
-        wallet,
-        tokenLabel
-      )) as unknown as QueryType;
+      const query = await localSdk.methods.balanceOf(wallet, tokenLabel);
       if (query != null) {
-        const arrBalances = Object.keys(query.result);
-        const parsedBalances: {
-          [key: string]: string;
-        } = {};
-        for (const typeOfBalance of arrBalances) {
-          const rawBalance = query.result[typeOfBalance];
-          // parseInt(query.result[typeOfBalance], 16) / 10 ** 18;
-          parsedBalances[typeOfBalance] = rawBalance;
-        }
         result.push({
           token: token,
           label: tokenLabel,
           claiming: false,
-          balance: { ...parsedBalances },
+          balance: { ...query.result },
         });
       }
     }
@@ -230,9 +207,9 @@ async function handleOnTransfer(
   amountToTransfer: string,
   useMainnet: boolean,
   targetAddress: string,
-  sdkTestnet: any,
-  sdkMainnet: any,
-  sdkContracts: any
+  sdkTestnet: IconBridgeSDKType,
+  sdkMainnet: IconBridgeSDKType,
+  sdkContracts: ContractListType
 ) {
   const result: {
     iconQuery: null | JSONRPCType;
@@ -258,14 +235,13 @@ async function handleOnTransfer(
     return result;
   } else {
     const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
-    const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
 
     if (fromIcon) {
       // if originating chain is ICON
       if (tokenToTransfer === lib.tokenNames.icx) {
         // if token to transfer is ICX. use 'transferNativeCoin' method
         // of btp contract.
-        result.iconQuery = await sdkMethods.transferNativeCoin(
+        result.iconQuery = await localSdk.icon.web.transferNativeCoin(
           targetAddress, // target bsc wallet address
           "bsc", // target chain
           loginWallets.icon, // originating icon wallet address
@@ -283,7 +259,7 @@ async function handleOnTransfer(
           // of tokens to the BTP contract and then the second one is to call
           // the 'transfer' method of the BTP contract.
 
-          result.iconQuery = await sdkMethods.transferToBTSContract(
+          result.iconQuery = await localSdk.icon.web.transferToBTSContract(
             amountToTransfer,
             contractAddress,
             loginWallets.icon
@@ -296,7 +272,7 @@ async function handleOnTransfer(
           // amount and the second tx is to call the 'transfer' method of the
           // btp contract.
 
-          result.iconQuery = await sdkMethods.approveBTSContract(
+          result.iconQuery = await localSdk.icon.web.approveBTSContract(
             amountToTransfer,
             contractAddress,
             loginWallets.icon
@@ -309,10 +285,10 @@ async function handleOnTransfer(
       if (tokenToTransfer === lib.tokenNames.bnb) {
         // if token to transfer is BNB. use 'transferNativeCoin' method
         // of btp contract.
-        const parsedAmount = lib.decimalToHex(
-          Number(amountToTransfer) * 10 ** 18
-        );
-        result.bscQuery = await sdkMethods.transferNativeCoin(
+        // const parsedAmount = lib.decimalToHex(
+        //   Number(amountToTransfer) * 10 ** 18
+        // );
+        result.bscQuery = await localSdk.bsc.web.transferNativeCoin(
           targetAddress, // target icon wallet address
           "icon", // target chain
           loginWallets.bsc, // originating icon wallet address
@@ -327,14 +303,14 @@ async function handleOnTransfer(
         // if token to transfer is any other token besides BNB.
         // call 'approve' method on token contract
 
-        result.bscQuery = await sdkMethods.approveTransfer(
+        result.bscQuery = await localSdk.bsc.web.approveTransfer(
           loginWallets.bsc, // originating icon wallet address
           amountToTransfer, // amount
           contractAddress // token contract address
         );
 
         const coinName = lib.getBtpCoinName(tokenToTransfer, useMainnet);
-        result.bscQuery2 = await sdkMethods.transfer(
+        result.bscQuery2 = await localSdk.bsc.web.transfer(
           targetAddress,
           "icon",
           loginWallets.bsc,
@@ -366,16 +342,15 @@ async function dispatchSecondTx(
   amountToTransfer: string,
   targetAddress: string,
   loginWallets: WalletsObjType,
-  sdkTestnet: any,
-  sdkMainnet: any
+  sdkTestnet: IconBridgeSDKType,
+  sdkMainnet: IconBridgeSDKType
 ) {
   if (typeof tokenToTransfer === "string") {
     const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
-    const sdkMethods = fromIcon ? localSdk.icon.web : localSdk.bsc.web;
 
     const targetChain = fromIcon ? "bsc" : "icon";
     const btpCoinName = lib.getBtpCoinName(tokenToTransfer, useMainnet);
-    const query = await sdkMethods.transfer(
+    const query = await localSdk.icon.web.transfer(
       btpCoinName,
       amountToTransfer,
       loginWallets.icon,
@@ -396,38 +371,50 @@ async function dispatchBscTransfer(params: BscParams) {
   console.log(params);
   let response: string | null | RequestResponse = null;
   try {
-    response = await window.ethereum.request({
-      method: "eth_sendTransaction",
-      params: [params],
-    });
+    if (window != null && window.ethereum != null) {
+      // eslint-disable-next-line
+      response = (await window.ethereum.request({
+        method: "eth_sendTransaction",
+        params: [params],
+      })) as unknown as string;
 
-    console.log("txHash response");
-    console.log(response);
+      console.log("txHash response");
+      console.log(response);
 
-    if (typeof response == "string") {
-      return {
-        txHash: response,
-      };
-    } else if (response == null) {
-      return {
-        txHash: null,
-        failure: {
-          code: "0",
-          message: "Unexpected Error",
-        },
-      };
+      if (typeof response == "string") {
+        return {
+          txHash: response,
+        };
+      } else if (response == null) {
+        return {
+          txHash: null,
+          failure: {
+            code: "0",
+            message: "Unexpected Error",
+          },
+        };
+      } else {
+        return {
+          txHash: null,
+          failure: response,
+        };
+      }
     } else {
-      return {
-        txHash: null,
-        failure: response,
-      };
+      throw new Error('Cant find "ethereum" property on global Window');
     }
-  } catch (err: any) {
+  } catch (err) {
     console.log("Error dispatching Tx to metamask");
     console.log(err);
+    if (err instanceof Error) {
+      console.log(err);
+      return {
+        txHash: null,
+        failure: { code: "0", message: err.message },
+      };
+    }
     return {
       txHash: null,
-      failure: { code: err.code, message: err.message },
+      failure: { code: "0", message: "Unexpected Error" },
     };
   } finally {
     console.log("finally block");

@@ -16,6 +16,7 @@ import {
   WalletsObjType,
   ChainComponentType,
   DefaultTxResultType,
+  ContractListType2,
 } from "../types";
 
 // DetailsSection imported with Next.js dynamic imports functionality
@@ -30,7 +31,7 @@ const DetailsSection = dynamic(
 // iconBridge sdk instances
 const sdkTestnet = new IconBridgeSDK({ useMainnet: false });
 const sdkMainnet = new IconBridgeSDK({ useMainnet: true });
-const CONTRACTS = sdkTestnet.sdkUtils.contracts;
+const CONTRACTS = sdkTestnet.sdkUtils.contracts as unknown as ContractListType2;
 // const CONTRACT_LABELS = sdkTestnet.sdkUtils.labels;
 const CONTRACT_LIST = lib.buildContractList(CONTRACTS);
 

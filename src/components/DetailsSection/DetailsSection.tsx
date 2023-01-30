@@ -22,8 +22,8 @@ export default function DetailsSection({
     <div
       className={
         isOpen
-          ? `${styles.detailsMain!} ${styles.show!}`
-          : `${styles.detailsMain!}`
+          ? `${styles.detailsMain} ${styles.show}`
+          : `${styles.detailsMain}`
       }
     >
       <div className={styles.header}>
@@ -31,8 +31,8 @@ export default function DetailsSection({
         <div
           className={
             isOpen
-              ? `${styles.expandBtnContainer!} ${styles.expandLess!}`
-              : `${styles.expandBtnContainer!}`
+              ? `${styles.expandBtnContainer} ${styles.expandLess}`
+              : `${styles.expandBtnContainer}`
           }
           onClick={handleToggle}
         >

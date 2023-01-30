@@ -9,12 +9,65 @@ export interface IconBridgeSDKType {
         arg1: string,
         arg2: string,
         arg3: WalletsObjType["icon"]
-      ) => JSONRPCType;
+      ) => Promise<JSONRPCType>;
+      transferNativeCoin: (
+        arg1: string,
+        arg2: string,
+        arg3: WalletsObjType["icon"],
+        arg4: string
+      ) => Promise<JSONRPCType>;
+      transferToBTSContract: (
+        arg1: string,
+        arg2: string,
+        arg3: WalletsObjType["icon"]
+      ) => Promise<JSONRPCType>;
+      approveBTSContract: (
+        arg1: string,
+        arg2: string,
+        arg3: WalletsObjType["icon"]
+      ) => Promise<JSONRPCType>;
+      transfer: (
+        arg1: string,
+        arg2: string,
+        arg3: WalletsObjType["icon"],
+        arg4: string,
+        arg5: string
+      ) => Promise<JSONRPCType>;
+    };
+    methods: {
+      balanceOf: (
+        arg1: WalletsObjType["icon"],
+        arg2: string
+      ) => Promise<QueryType>;
     };
   };
   bsc: {
     web: {
-      reclaim: (arg1: string, arg2: string, arg3: string) => JSONRPCType;
+      reclaim: (arg1: string, arg2: string, arg3: string) => Promise<BscParams>;
+      transferNativeCoin: (
+        arg1: string,
+        arg2: string,
+        arg3: WalletsObjType["bsc"],
+        arg4: string
+      ) => Promise<BscParams>;
+      approveTransfer: (
+        arg1: WalletsObjType["bsc"],
+        arg2: string,
+        arg3: string
+      ) => Promise<BscParams>;
+      transfer: (
+        arg1: string,
+        arg2: string,
+        arg3: WalletsObjType["icon"],
+        arg4: string,
+        arg5: string
+      ) => Promise<BscParams>;
+    };
+    methods: {
+      balanceOf: (
+        arg1: WalletsObjType["bsc"],
+        arg2: string
+      ) => Promise<BscBalanceOfReply>;
     };
   };
 }
@@ -122,7 +175,7 @@ export type GenericModalType = {
 export type QueryType = {
   jsonrpc: string;
   error?: any;
-  result?: any;
+  result?: IconBalanceOfReply;
 };
 
 export type JSONRPCType = {
@@ -167,9 +220,10 @@ export type BscBalanceOfReply = {
 };
 
 export type IconBalanceOfReply = {
-  result: {
-    [key: string]: string;
-  };
+  locked: string;
+  refundable: string;
+  usable: string;
+  userBalance: string;
 };
 
 export type Url = {
@@ -187,4 +241,55 @@ export type TxModalType = {
   tokenToTransfer: string | undefined;
   transferTxResult: DefaultTxResultType | null;
   methodCallTxResult: DefaultTxResultType | null;
+};
+
+export type ContractListType = {
+  [key: string]: {
+    [key: string | number]: {
+      mainnet: string;
+      testnet: string;
+    };
+  };
+};
+
+export type SdkContracts = {
+  icon: {
+    [key: string]: {
+      mainnet: string;
+      testnet: string;
+    };
+  };
+  bsc: {
+    [key: string]: {
+      mainnet: string;
+      testnet: string;
+    };
+  };
+};
+
+export type ContractListType2 = {
+  icon: {
+    testnet: {
+      [key: string]: {
+        address: string;
+      };
+    };
+    mainnet: {
+      [key: string]: {
+        address: string;
+      };
+    };
+  };
+  bsc: {
+    testnet: {
+      [key: string]: {
+        address: string;
+      };
+    };
+    mainnet: {
+      [key: string]: {
+        address: string;
+      };
+    };
+  };
 };

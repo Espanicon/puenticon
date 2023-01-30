@@ -17,16 +17,16 @@ export default function GenericModal({
   }
   return (
     <div
-      className={`${styles.modal!} ${
-        isOpen ? styles.modalOpen! : styles.modalClosed!
+      className={`${styles.modal} ${
+        isOpen ? styles.modalOpen : styles.modalClosed
       }`}
       onClick={handleOnClose}
     >
       <div
         className={
           useSmall
-            ? `${styles.main!} ${styles.mainSmall!}`
-            : `${styles.main!} ${styles.mainBig!}`
+            ? `${styles.main} ${styles.mainSmall}`
+            : `${styles.main} ${styles.mainBig}`
         }
         onClick={onMainClick}
       >
