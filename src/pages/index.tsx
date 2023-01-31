@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import type { ChangeEvent } from "react";
 import IconBridgeSDK from "@espanicon/icon-bridge-sdk-js";
 import dynamic from "next/dynamic";
 import styles from "./index.module.css";
@@ -9,7 +10,7 @@ import { TxModal2 } from "../components/TxModal/TxModal";
 import Head from "next/head";
 import lib from "../lib/lib";
 import { WALLETS_INIT, helpers } from "../helpers/helpers";
-import {
+import type {
   Tokens,
   TxType,
   TokenType,
@@ -17,6 +18,9 @@ import {
   ChainComponentType,
   DefaultTxResultType,
   ContractListType2,
+  IconBridgeSDKType,
+  // IconexResponseEvent,
+  // QueryResult,
 } from "../types";
 
 // DetailsSection imported with Next.js dynamic imports functionality
@@ -27,10 +31,17 @@ const DetailsSection = dynamic(
   () => import("../components/DetailsSection/DetailsSection"),
   { ssr: false }
 );
+void DetailsSection;
 
 // iconBridge sdk instances
-const sdkTestnet = new IconBridgeSDK({ useMainnet: false });
-const sdkMainnet = new IconBridgeSDK({ useMainnet: true });
+// eslint-disable-next-line
+const sdkTestnet = new IconBridgeSDK({
+  useMainnet: false,
+}) as unknown as IconBridgeSDKType;
+// eslint-disable-next-line
+const sdkMainnet = new IconBridgeSDK({
+  useMainnet: true,
+}) as unknown as IconBridgeSDKType;
 const CONTRACTS = sdkTestnet.sdkUtils.contracts as unknown as ContractListType2;
 // const CONTRACT_LABELS = sdkTestnet.sdkUtils.labels;
 const CONTRACT_LIST = lib.buildContractList(CONTRACTS);
@@ -52,6 +63,7 @@ const TOKENS_AVAILABLE: Partial<typeof lib.tokens> = [
 const iconInitTokenBalance: Array<TokenType> = TOKENS_AVAILABLE.map(
   (tokenName) => {
     return {
+      // eslint-disable-next-line
       token: tokenName!,
       label: "",
       claiming: false,
@@ -65,21 +77,11 @@ const iconInitTokenBalance: Array<TokenType> = TOKENS_AVAILABLE.map(
   }
 );
 
-const initRefParams = {
-  iconWallet: null,
-  bscWallet: null,
-  from: null,
-  to: null,
-  token: null,
-  target: null,
-  amount: null,
-  fromIcon: null,
-};
-
 // main component
 function Home() {
   const [fromIcon, setFromIcon] = useState<boolean>(true);
   const [tokenToTransfer, setTokenToTransfer] = useState<Tokens>(
+    // eslint-disable-next-line
     lib.tokens[0]!
   );
   const [amountToTransfer, setAmountToTransfer] = useState<string>("");
@@ -91,11 +93,14 @@ function Home() {
     useState<DefaultTxResultType | null>(null);
   const [methodCallTxResult, setMethodCallTxResult] =
     useState<DefaultTxResultType | null>(null);
-  const [reclaimCallTxResult, setReclaimCallTxResult] = useState<any>(null);
+  const [reclaimCallTxResult, setReclaimCallTxResult] =
+    useState<DefaultTxResultType | null>(null);
   const [loginWallets, setLoginWallets] =
     useState<WalletsObjType>(WALLETS_INIT);
+  // eslint-disable-next-line
   const [iconTokensBalance, setIconTokensBalance] =
     useState<Array<TokenType>>(iconInitTokenBalance);
+  // eslint-disable-next-line
   const [bscTokensBalance, setBscTokensBalance] = useState<any>(null);
 
   const txFlag = useRef<TxType>("");
@@ -150,23 +155,23 @@ function Home() {
     setIsModalOpen(false);
   }
 
-  function handleOnChainFromIcon(evnt: any) {
+  function handleOnChainFromIcon(evnt: ChangeEvent<HTMLSelectElement>) {
     return helpers.handleOnChainFromIcon(evnt, setFromIcon);
   }
 
-  function handleOnChainFromBsc(evnt: any) {
+  function handleOnChainFromBsc(evnt: ChangeEvent<HTMLSelectElement>) {
     return helpers.handleOnChainFromBsc(evnt, setFromIcon);
   }
 
-  function handleTokenSelection(evnt: any) {
+  function handleTokenSelection(evnt: ChangeEvent<HTMLSelectElement>) {
     return helpers.handleTokenSelection(evnt, setTokenToTransfer);
   }
 
-  function handleAmountToTransferChange(evnt: any) {
+  function handleAmountToTransferChange(evnt: ChangeEvent<HTMLInputElement>) {
     helpers.handleAmountToTransferChange(evnt, setAmountToTransfer);
   }
 
-  function handleOnNetworkChange(evnt: any) {
+  function handleOnNetworkChange(evnt: ChangeEvent<HTMLSelectElement>) {
     return helpers.handleOnNetworkChange(evnt, setUseMainnet);
   }
 
@@ -178,6 +183,7 @@ function Home() {
       tokenToTransfer,
       amountToTransfer,
       useMainnet,
+      // eslint-disable-next-line
       targetAddress!,
       sdkTestnet,
       sdkMainnet,
@@ -224,7 +230,7 @@ function Home() {
             //dispatch second bsc tx. token transfer tx.
             if (result.bscQuery2 == null) {
               setTransferTxResult({
-                txHash: null,
+                txHash: "",
                 failure: {
                   code: "0",
                   message: "ERROR: second tx object is null",
@@ -236,10 +242,13 @@ function Home() {
               );
               let txResult2 = txHash2;
               if (typeof txHash2.txHash === "string") {
-                txResult2 = await lib.getBscTxResult(
+                const t = await lib.getBscTxResult(
                   txHash2.txHash,
                   localSdk.params.bscProvider.hostname
                 );
+                if (t != null) {
+                  txResult2 = t;
+                }
               }
               setTransferTxResult(txResult2);
             }
@@ -261,10 +270,11 @@ function Home() {
     }
   }
 
-  function handleOnTargetAddressChange(evnt: any) {
+  function handleOnTargetAddressChange(evnt: ChangeEvent<HTMLInputElement>) {
     return helpers.handleOnTargetAddressChange(evnt, setTargetAddress);
   }
 
+  // eslint-disable-next-line
   async function handleTokenToRefund(token: TokenType) {
     setIconTokensBalance((status) => {
       const result: Array<TokenType> = [];
@@ -287,22 +297,54 @@ function Home() {
     helpers.dispatchTxEvent(queryObj);
   }
 
-  async function handleIconWalletResponse(evnt: any) {
+  // eslint-disable-next-line
+  async function handleIconWalletResponse(evnt: any): Promise<void> {
+    // eslint-disable-next-line
     const { type, payload } = evnt.detail;
     console.log("event response");
     console.log(type);
     console.log(payload);
 
-    let txResult = payload;
-    if (payload != null && payload.result != null) {
-      txResult = await lib.getTxResult(payload.result, useMainnet);
+    let txResult: DefaultTxResultType = {
+      txHash: "",
+    };
+
+    // eslint-disable-next-line
+    if (payload.result != null) {
+      // eslint-disable-next-line
+      txResult.txHash = payload.result;
     }
 
+    // eslint-disable-next-line
+    if (payload.code != null && payload.message != null) {
+      txResult.failure = {
+        // eslint-disable-next-line
+        code: payload.code,
+        // eslint-disable-next-line
+        message: payload.message,
+      };
+    }
+    // eslint-disable-next-line
+    if (payload != null && payload.result != null) {
+      // eslint-disable-next-line
+      const t = await lib.getTxResult(payload.result, useMainnet);
+      // eslint-disable-next-line
+      if (t != null) {
+        txResult = {
+          ...txResult,
+          ...t,
+        };
+      }
+    }
+
+    // eslint-disable-next-line
     if (payload.code != null && payload.message != null) {
       txResult = {
-        txHash: null,
+        txHash: "",
         failure: {
+          // eslint-disable-next-line
           code: payload.code,
+          // eslint-disable-next-line
           message: payload.message,
         },
       };
@@ -337,7 +379,7 @@ function Home() {
   useEffect(() => {
     if (reclaimCallTxResult != null && txFlag.current === "reclaimCall") {
       txFlag.current = "";
-      helpers.getIconTokensBalance(
+      void helpers.getIconTokensBalance(
         loginWallets,
         useMainnet,
         TOKENS_AVAILABLE,
@@ -355,7 +397,7 @@ function Home() {
       targetAddress != null
     ) {
       txFlag.current = "transfer";
-      helpers.dispatchSecondTx(
+      void helpers.dispatchSecondTx(
         tokenToTransfer,
         fromIcon,
         useMainnet,
@@ -420,15 +462,18 @@ function Home() {
 
   useEffect(() => {
     // create event listener for Hana/ICONex
+    // eslint-disable-next-line
     window.addEventListener("ICONEX_RELAY_RESPONSE", handleIconWalletResponse);
 
     // component cleanup after dismount
     return function cleanup() {
       window.removeEventListener(
         "ICONEX_RELAY_RESPONSE",
+        // eslint-disable-next-line
         handleIconWalletResponse
       );
     };
+    // eslint-disable-next-line
   }, []);
 
   return (
@@ -498,6 +543,7 @@ function Home() {
                     >
                       {TOKENS_AVAILABLE.map((token, index) => {
                         return (
+                          // eslint-disable-next-line
                           <option value={token} key={`${token}-${index}`}>
                             {token}
                           </option>
@@ -543,6 +589,7 @@ function Home() {
                         ? `${styles.submitBtn} ${styles.submitBtnDisabled}`
                         : `${styles.submitBtn}`
                     }
+                    // eslint-disable-next-line
                     onClick={handleOnTransfer}
                   >
                     Transfer

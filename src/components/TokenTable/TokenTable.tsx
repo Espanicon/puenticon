@@ -1,4 +1,4 @@
-import { TokenType, TokenTableType } from "../../types";
+import type { TokenType, TokenTableType } from "../../types";
 import { LoadingComponent } from "../miscItems/miscItems";
 import styles from "./TokenTable.module.css";
 
@@ -12,8 +12,9 @@ export default function TokenTable({
   tokens,
   handleTokenToRefund,
 }: TokenTableType) {
+  void tableLabel;
   const tokensKeys = tokens.map((eachToken) => {
-    // let ranKey = Math.random
+    void eachToken;
     try {
       return self.crypto.randomUUID();
     } catch (err) {
@@ -45,19 +46,25 @@ export default function TokenTable({
             return (
               <tr className={styles.tableRow} key={tokensKeys[index]}>
                 <td>{eachToken.token}</td>
+                {/* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */}
                 <td>{hexToDecimal(eachToken.balance.locked!)}</td>
+                {/* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */}
                 <td>{hexToDecimal(eachToken.balance.refundable!)}</td>
+                {/* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */}
                 <td>{hexToDecimal(eachToken.balance.usable!)}</td>
+                {/* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */}
                 <td>{hexToDecimal(eachToken.balance.userBalance!)}</td>
                 <td>
                   <button
                     disabled={
+                      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                       eachToken.balance.refundable! === "0x0" ||
                       eachToken.claiming === true
                         ? true
                         : false
                     }
                     onClick={() =>
+                      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                       handleOnClick(eachToken, eachToken.balance.refundable!)
                     }
                   >

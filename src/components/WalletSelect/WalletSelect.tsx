@@ -1,8 +1,9 @@
-import { useState, ChangeEvent } from "react";
+import { useState } from "react";
+import type { ChangeEvent } from "react";
 import IconLoginBtn from "../IconLoginBtn/IconLoginBtn";
 import BscLoginBtn from "../BscLoginBtn/BscLoginBtn";
 import styles from "./WalletSelect.module.css";
-import { WalletProps } from "../../types";
+import type { WalletProps } from "../../types";
 
 interface SetArr<T> {
   (arg: T): T;

@@ -1,4 +1,4 @@
-import type { TxModalType, TxResultComponentType } from "../../types";
+import type { TxModalType } from "../../types";
 import GenericModal from "../GenericModal/genericModal";
 import { LoadingComponent } from "../miscItems/miscItems";
 import lib from "../../lib/lib";
@@ -60,7 +60,8 @@ export function TxModal2({
                 </li>
               )}
             </ul>
-          ) : lib.iconTokens.native.includes(tokenToTransfer!) ? (
+          ) : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          lib.iconTokens.native.includes(tokenToTransfer!) ? (
             <ul className={styles.ul}>
               <li>
                 Transfering {tokenToTransfer} to BTP smart contract.{" "}

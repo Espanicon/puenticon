@@ -1,8 +1,30 @@
 import type { ReactNode, ChangeEventHandler, Dispatch } from "react";
 // import type IconBridgeSDK from "@espanicon/icon-bridge-sdk-js";
-import lib from "./lib/lib";
+import type lib from "./lib/lib";
+
+export interface EspaniconSDKType {
+  getTxResult: (hash: string) => Promise<QueryResult>;
+  queryMethod: (
+    arg1: string,
+    arg2: string,
+    arg3: string,
+    arg4: boolean,
+    arg5: string | boolean | null
+  ) => Promise<QueryResult>;
+}
 
 export interface IconBridgeSDKType {
+  params: {
+    bscProvider: {
+      hostname: string;
+    };
+    iconProvider: {
+      hostname: string;
+    };
+  };
+  sdkUtils: {
+    contracts: ContractListType2;
+  };
   icon: {
     web: {
       reclaim: (
@@ -124,7 +146,8 @@ export type ChainComponentType = {
 };
 
 export type DefaultTxResultType = {
-  txHash: null | string;
+  txHash: string;
+  blockNumber?: null | string;
   failure?: {
     code: string;
     message: string;
@@ -174,8 +197,31 @@ export type GenericModalType = {
 
 export type QueryType = {
   jsonrpc: string;
-  error?: any;
+  error?: {
+    code: string;
+    message: string;
+  };
   result?: IconBalanceOfReply;
+};
+
+export type QueryResult = {
+  jsonrpc: string;
+  error?: {
+    code: string;
+    message: string;
+  };
+  result?: DefaultTxResultType;
+};
+
+export type IconexResponseEvent = {
+  detail: {
+    type: string;
+    payload: {
+      result?: string;
+      code?: string;
+      message?: string;
+    };
+  };
 };
 
 export type JSONRPCType = {
@@ -216,7 +262,10 @@ export type BscBalanceOfReply = {
   _lockedBalance: string;
   _refundableBalance: string;
   _userBalance: string;
-  error?: any;
+  error?: {
+    code: string;
+    message: string;
+  };
 };
 
 export type IconBalanceOfReply = {

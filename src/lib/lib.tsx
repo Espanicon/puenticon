@@ -6,6 +6,7 @@ import type {
   Url,
   ContractListType,
   ContractListType2,
+  EspaniconSDKType,
   // DefaultTxResultType,
 } from "../types";
 
@@ -125,8 +126,10 @@ function buildContractList(sdkContracts: ContractListType2) {
 
   for (const chain of chains) {
     result[chain] = {};
+    // eslint-disable-next-line
     const networks = Object.keys(sdkContracts[chain]);
     for (const network of networks) {
+      // eslint-disable-next-line
       const tokens = Object.keys(sdkContracts[chain][network]);
       for (const token of tokens) {
         if (result[chain][token] == null) {
@@ -134,11 +137,14 @@ function buildContractList(sdkContracts: ContractListType2) {
             mainnet: "",
             testnet: "",
           };
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           result[chain][token][network] =
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             sdkContracts[chain][network][token].address;
         } else {
           result[chain][token] = {
             ...result[chain][token],
+            // eslint-disable-next-line
             [network]: sdkContracts[chain][network][token].address,
           };
         }
@@ -239,27 +245,38 @@ function isValidIconAddress(address: string) {
   return regex.test(address);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useTraceUpdate(props: any, from = "default", print = true) {
   const prev = useRef(props);
   useEffect(() => {
+    // eslint-disable-next-line
     const changedProps = Object.entries(props).reduce((ps: any, [k, v]) => {
+      // eslint-disable-next-line
       let newV: any;
+      // eslint-disable-next-line
       let newK: any;
       const flag = false;
       if (flag) {
         // if (k === "pageItems") {
+        // eslint-disable-next-line
         newV = JSON.stringify(v);
+        // eslint-disable-next-line
         newK = JSON.stringify(prev.current[k]);
       } else {
+        // eslint-disable-next-line
         newV = v;
+        // eslint-disable-next-line
         newK = prev.current[k];
       }
       if (newK !== newV) {
+        // eslint-disable-next-line
         ps[k] = [newK, newV];
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return ps;
     }, {});
 
+    // eslint-disable-next-line
     if (Object.keys(changedProps).length > 0) {
       console.log("no change in props");
       if (print) {
@@ -267,6 +284,7 @@ export function useTraceUpdate(props: any, from = "default", print = true) {
         console.log("Changed props:", changedProps);
       }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     prev.current = props;
   });
 }
@@ -279,23 +297,27 @@ async function getTxResult(
   console.log("getTxResult");
   console.log(hash);
 
-  let sdk: any = null;
+  let sdk: null | EspaniconSDKType = null;
 
   if (!useMainnet) {
+    // eslint-disable-next-line
     sdk = new EspaniconSDKWeb(RPC_NODES.lisbon.hostname, RPC_NODES.lisbon.nid);
   } else {
+    // eslint-disable-next-line
     sdk = new EspaniconSDKWeb(RPC_NODES.icon.hostname, RPC_NODES.icon.nid);
   }
   //
-  for (let i = 0; i < maxIterations; i++) {
-    // fetch tx from blockchain
-    console.log(`round ${i}`);
-    const txResult = await sdk.getTxResult(hash);
+  if (sdk != null) {
+    for (let i = 0; i < maxIterations; i++) {
+      // fetch tx from blockchain
+      console.log(`round ${i}`);
+      const txResult = await sdk.getTxResult(hash);
 
-    if (txResult.error == null) {
-      return txResult;
-    } else {
-      await sleep();
+      if (txResult.error == null && txResult != null) {
+        return txResult.result;
+      } else {
+        await sleep();
+      }
     }
   }
 
@@ -307,7 +329,7 @@ function sleep(time = 1000): Promise<void> {
 }
 
 function getBtpCoinName(tokenLabel: string, useMainnet: boolean) {
-  let coinName: string = "";
+  let coinName = "";
   if (useMainnet) {
     switch (tokenLabel) {
       case tokenNames.icx:
@@ -404,7 +426,8 @@ async function getBscTxResult(
     console.log("getTxResult");
     console.log(hash);
 
-    let sdk = new EspaniconSDKWeb(
+    // eslint-disable-next-line
+    const sdk: EspaniconSDKType = new EspaniconSDKWeb(
       RPC_NODES.lisbon.hostname,
       RPC_NODES.lisbon.nid
     );
@@ -417,10 +440,13 @@ async function getBscTxResult(
       console.log(`round ${i}`);
       console.log(urlObj);
       console.log(jsonRpcObj);
+      // eslint-disable-next-line
       const txResult = await sdk.queryMethod(
-        urlObj.path,
+        // eslint-disable-next-line
+        urlObj.path!,
         jsonRpcObj,
-        urlObj.hostname,
+        // eslint-disable-next-line
+        urlObj.hostname!,
         urlObj.protocol === "https" ? true : false,
         urlObj.port === "" ? false : urlObj.port
       );
@@ -443,7 +469,7 @@ async function getBscTxResult(
       ) {
         await sleep(3000);
       } else {
-        return txResult;
+        return txResult.result;
       }
     }
   } catch (err) {
@@ -461,7 +487,7 @@ function makeEthJsonRpcObj(
   data: string,
   callType: string
 ) {
-  let params: any[];
+  let params: Array<string> | Array<{ to: string | null; data: string }>;
   if (to == null) {
     params = [data];
   } else {

@@ -12,6 +12,8 @@ export default function DetailsSection({
   handleTokenToRefund,
 }: DetailsSectionType) {
   const [isOpen, setIsOpen] = useState(false);
+  void wallets;
+  void bscWalletDetails;
 
   function handleToggle() {
     setIsOpen((state) => {

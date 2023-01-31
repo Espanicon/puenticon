@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import styles from "./IconLoginBtn.module.css";
-import { CustomEventType, WalletsObjType } from "../../types";
+import type { CustomEventType } from "../../types";
 
 export default function IconLoginBtn({
   handleWalletSelect,
@@ -46,6 +46,7 @@ export default function IconLoginBtn({
         iconexRelayResponseEventHandler
       );
     };
+    // eslint-disable-next-line
   }, []);
 
   return (

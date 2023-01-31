@@ -8,8 +8,8 @@ import type {
   WalletsObjType,
   BscParams,
   IconBridgeSDKType,
-  SdkContracts,
-  IconBalanceOfReply,
+  // SdkContracts,
+  // IconBalanceOfReply,
   ContractListType,
 } from "../types";
 
@@ -88,6 +88,7 @@ function handleAmountToTransferChange(
   const result = [];
   for (let each = 0; each < 2; each++) {
     if (valueArr[each] != null) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const a = valueArr[each]!.replace(/\D/, "");
       result.push(a);
     }
@@ -119,9 +120,11 @@ async function refundIconTokenBalance(
   sdkTestnet: IconBridgeSDKType,
   sdkMainnet: IconBridgeSDKType
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const wallet = loginWallets.icon!;
   const localSdk = useMainnet ? sdkMainnet.icon : sdkTestnet.icon;
   const tokenLabel = lib.getBtpCoinName(tokenData.token, useMainnet);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const refundableBalance = tokenData.balance.refundable!;
   // parseInt(tokenData.balance.refundable!, 16) / 10 ** 18;
   const queryObj = await localSdk.web.reclaim(
@@ -250,8 +253,10 @@ async function handleOnTransfer(
         result.type = "transfer";
       } else {
         const contractAddress = useMainnet
-          ? sdkContracts.icon[tokenToTransfer]!.mainnet
-          : sdkContracts.icon[tokenToTransfer]!.testnet;
+          ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            sdkContracts.icon[tokenToTransfer]!.mainnet
+          : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            sdkContracts.icon[tokenToTransfer]!.testnet;
 
         if (lib.iconTokens.native.includes(tokenToTransfer)) {
           // if token to transfer is a native ICON token, the proccess
@@ -298,8 +303,10 @@ async function handleOnTransfer(
         result.type = "transfer";
       } else {
         const contractAddress = useMainnet
-          ? sdkContracts.bsc[tokenToTransfer]!.mainnet
-          : sdkContracts.bsc[tokenToTransfer]!.testnet;
+          ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            sdkContracts.bsc[tokenToTransfer]!.mainnet
+          : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            sdkContracts.bsc[tokenToTransfer]!.testnet;
         // if token to transfer is any other token besides BNB.
         // call 'approve' method on token contract
 
@@ -387,7 +394,7 @@ async function dispatchBscTransfer(params: BscParams) {
         };
       } else if (response == null) {
         return {
-          txHash: null,
+          txHash: "",
           failure: {
             code: "0",
             message: "Unexpected Error",
@@ -395,7 +402,7 @@ async function dispatchBscTransfer(params: BscParams) {
         };
       } else {
         return {
-          txHash: null,
+          txHash: "",
           failure: response,
         };
       }
@@ -408,12 +415,12 @@ async function dispatchBscTransfer(params: BscParams) {
     if (err instanceof Error) {
       console.log(err);
       return {
-        txHash: null,
+        txHash: "",
         failure: { code: "0", message: err.message },
       };
     }
     return {
-      txHash: null,
+      txHash: "",
       failure: { code: "0", message: "Unexpected Error" },
     };
   } finally {

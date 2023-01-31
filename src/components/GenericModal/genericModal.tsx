@@ -1,5 +1,5 @@
 import type { MouseEvent } from "react";
-import { GenericModalType } from "../../types";
+import type { GenericModalType } from "../../types";
 import styles from "./genericModal.module.css";
 
 export default function GenericModal({
