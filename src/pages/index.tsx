@@ -106,21 +106,22 @@ function Home() {
   const txFlag = useRef<TxType>("");
 
   // FOR TESTING
-  lib.useTraceUpdate(
-    {
-      fromIcon,
-      tokenToTransfer,
-      amountToTransfer,
-      useMainnet,
-      targetAddress,
-      targetStatus,
-      isModalOpen,
-      transferTxResult,
-      methodCallTxResult,
-      loginWallets,
-    },
-    "Home"
-  );
+  // lib.useTraceUpdate(
+  //   {
+  //     fromIcon,
+  //     tokenToTransfer,
+  //     amountToTransfer,
+  //     useMainnet,
+  //     targetAddress,
+  //     targetStatus,
+  //     isModalOpen,
+  //     transferTxResult,
+  //     methodCallTxResult,
+  //     loginWallets,
+  //   },
+  //   "Home"
+  // );
+  // FOR TESTING
 
   function resetTxStates() {
     setTransferTxResult(null);
@@ -189,8 +190,6 @@ function Home() {
       sdkMainnet,
       CONTRACT_LIST
     );
-    console.log("transfer request");
-    console.log(result);
     if (fromIcon) {
       if (result.iconQuery != null) {
         txFlag.current = result.type;
@@ -203,8 +202,6 @@ function Home() {
         // fetch the appropiate sdk depending of the network
         const localSdk = useMainnet ? sdkMainnet : sdkTestnet;
         const txHash = await helpers.dispatchBscTransfer(result.bscQuery);
-        console.log("wallet response");
-        console.log(txHash);
         if (result.type === "transfer") {
           // if the transaction of calling transferNativeCoin
           if (typeof txHash.txHash === "string") {
@@ -301,9 +298,9 @@ function Home() {
   async function handleIconWalletResponse(evnt: any): Promise<void> {
     // eslint-disable-next-line
     const { type, payload } = evnt.detail;
-    console.log("event response");
-    console.log(type);
-    console.log(payload);
+    // console.log("event response");
+    // console.log(type);
+    // console.log(payload);
 
     let txResult: DefaultTxResultType = {
       txHash: "",
@@ -345,8 +342,6 @@ function Home() {
       if (payload != null && payload.result != null) {
         // eslint-disable-next-line
         const t = await lib.getTxResult(payload.result, useMainnet);
-        console.log("tx result");
-        console.log(t);
         // eslint-disable-next-line
         if (t != null) {
           txResult = {

@@ -294,8 +294,6 @@ async function getTxResult(
   useMainnet: boolean,
   maxIterations = 10
 ) {
-  console.log("getTxResult");
-  console.log(hash);
 
   let sdk: null | EspaniconSDKType = null;
 
@@ -310,10 +308,10 @@ async function getTxResult(
   if (sdk != null) {
     for (let i = 0; i < maxIterations; i++) {
       // fetch tx from blockchain
-      console.log(`round ${i}`);
+      // console.log(`round ${i}`);
       const txResult = await sdk.getTxResult(hash);
-      console.log("sdk tx result");
-      console.log(txResult);
+      // console.log("sdk tx result");
+      // console.log(txResult);
 
       if (txResult.error == null) {
         return txResult;
@@ -425,8 +423,6 @@ async function getBscTxResult(
   maxIterations = 20
 ) {
   try {
-    console.log("getTxResult");
-    console.log(hash);
 
     // eslint-disable-next-line
     const sdk: EspaniconSDKType = new EspaniconSDKWeb(
@@ -439,9 +435,9 @@ async function getBscTxResult(
     const urlObj = parseEthRPCUrl(nodeUrl);
     for (let i = 0; i < maxIterations; i++) {
       // fetch tx from blockchain
-      console.log(`round ${i}`);
-      console.log(urlObj);
-      console.log(jsonRpcObj);
+      // console.log(`round ${i}`);
+      // console.log(urlObj);
+      // console.log(jsonRpcObj);
       // eslint-disable-next-line
       const txResult = await sdk.queryMethod(
         // eslint-disable-next-line
@@ -452,9 +448,6 @@ async function getBscTxResult(
         urlObj.protocol === "https" ? true : false,
         urlObj.port === "" ? false : urlObj.port
       );
-
-      console.log("query response");
-      console.log(txResult);
 
       if (txResult == null) {
         throw new Error("error making fetch request");

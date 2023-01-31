@@ -374,8 +374,6 @@ type RequestResponse = {
 };
 
 async function dispatchBscTransfer(params: BscParams) {
-  console.log("bsc dispatch params");
-  console.log(params);
   let response: string | null | RequestResponse = null;
   try {
     if (window != null && window.ethereum != null) {
@@ -384,9 +382,6 @@ async function dispatchBscTransfer(params: BscParams) {
         method: "eth_sendTransaction",
         params: [params],
       })) as unknown as string;
-
-      console.log("txHash response");
-      console.log(response);
 
       if (typeof response == "string") {
         return {
@@ -410,8 +405,6 @@ async function dispatchBscTransfer(params: BscParams) {
       throw new Error('Cant find "ethereum" property on global Window');
     }
   } catch (err) {
-    console.log("Error dispatching Tx to metamask");
-    console.log(err);
     if (err instanceof Error) {
       console.log(err);
       return {
@@ -424,8 +417,6 @@ async function dispatchBscTransfer(params: BscParams) {
       failure: { code: "0", message: "Unexpected Error" },
     };
   } finally {
-    console.log("finally block");
-    console.log(response);
   }
 }
 

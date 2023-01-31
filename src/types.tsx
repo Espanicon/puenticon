@@ -147,6 +147,7 @@ export type ChainComponentType = {
 
 export type DefaultTxResultType = {
   txHash: string;
+  hash?: string;
   blockNumber?: null | string;
   failure?: {
     code: string;

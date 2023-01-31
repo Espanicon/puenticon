@@ -31,9 +31,6 @@ export function TxModal2({
         : true
       : true;
 
-  console.log("tx status");
-  console.log(transferTxResult);
-  console.log(methodCallTxResult);
   return (
     <GenericModal isOpen={isOpen} onClose={onClose} useSmall={true}>
       <div className={styles.main}>
@@ -149,14 +146,14 @@ export function TxModal2({
             {transferTxResult == null ? (
               <></>
             ) : transferTxResult.failure == null ? (
-              <li>Tx Hash: {transferTxResult.txHash}</li>
+              <li>Tx Hash: {transferTxResult.hash}</li>
             ) : (
               <li>
                 Error response from chain:{" "}
                 {JSON.stringify({
                   code: transferTxResult.failure.code,
                   message: transferTxResult.failure.message,
-                  txHash: transferTxResult.txHash,
+                  txHash: transferTxResult.hash,
                 })}
               </li>
             )}
@@ -165,12 +162,40 @@ export function TxModal2({
           <ul className={styles.ul}>
             <li>
               Approving BTP contract to transfer {tokenToTransfer} token.{" "}
-              {transferTxResult === null ? `In Progress..` : `Done`}
+              {methodCallTxResult === null ? `In Progress..` : `Done`}
             </li>
+            {methodCallTxResult == null ? (
+              <></>
+            ) : methodCallTxResult.failure == null ? (
+              <li>Tx Hash: {methodCallTxResult.hash}</li>
+            ) : (
+              <li>
+                Error response from chain:{" "}
+                {JSON.stringify({
+                  code: methodCallTxResult.failure.code,
+                  message: methodCallTxResult.failure.message,
+                  txHash: methodCallTxResult.hash,
+                })}
+              </li>
+            )}
             <li>
               Transfering {tokenToTransfer} from {from} to {to} chain.{" "}
               {transferTxResult === null ? `Pending..` : `Done`}
             </li>
+            {transferTxResult == null ? (
+              <></>
+            ) : transferTxResult.failure == null ? (
+              <li>Tx Hash: {transferTxResult.hash}</li>
+            ) : (
+              <li>
+                Error response from chain:{" "}
+                {JSON.stringify({
+                  code: transferTxResult.failure.code,
+                  message: transferTxResult.failure.message,
+                  txHash: transferTxResult.hash,
+                })}
+              </li>
+            )}
           </ul>
         )}
         <button
