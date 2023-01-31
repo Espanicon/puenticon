@@ -309,49 +309,51 @@ function Home() {
       txHash: "",
     };
 
-    // eslint-disable-next-line
-    if (payload.result != null) {
+    if (payload != null) {
       // eslint-disable-next-line
-      txResult.txHash = payload.result;
-    }
-
-    // eslint-disable-next-line
-    if (payload.code != null && payload.message != null) {
-      txResult.failure = {
+      if (payload.result != null) {
         // eslint-disable-next-line
-        code: payload.code,
-        // eslint-disable-next-line
-        message: payload.message,
-      };
-    }
+        txResult.txHash = payload.result;
+      }
 
-    // handle error response from wallet
-    // eslint-disable-next-line
-    if (payload.code != null && payload.message != null) {
-      txResult = {
-        txHash: "",
-        failure: {
+      // eslint-disable-next-line
+      if (payload.code != null && payload.message != null) {
+        txResult.failure = {
           // eslint-disable-next-line
           code: payload.code,
           // eslint-disable-next-line
           message: payload.message,
-        },
-      };
-    }
-
-    // fetch tx status on chain
-    // eslint-disable-next-line
-    if (payload != null && payload.result != null) {
-      // eslint-disable-next-line
-      const t = await lib.getTxResult(payload.result, useMainnet);
-      console.log("tx result");
-      console.log(t);
-      // eslint-disable-next-line
-      if (t != null) {
-        txResult = {
-          ...txResult,
-          ...t,
         };
+      }
+
+      // handle error response from wallet
+      // eslint-disable-next-line
+      if (payload.code != null && payload.message != null) {
+        txResult = {
+          txHash: "",
+          failure: {
+            // eslint-disable-next-line
+            code: payload.code,
+            // eslint-disable-next-line
+            message: payload.message,
+          },
+        };
+      }
+
+      // fetch tx status on chain
+      // eslint-disable-next-line
+      if (payload != null && payload.result != null) {
+        // eslint-disable-next-line
+        const t = await lib.getTxResult(payload.result, useMainnet);
+        console.log("tx result");
+        console.log(t);
+        // eslint-disable-next-line
+        if (t != null) {
+          txResult = {
+            ...txResult,
+            ...t,
+          };
+        }
       }
     }
 
