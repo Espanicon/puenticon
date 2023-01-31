@@ -105,21 +105,21 @@ export function TxModal2({
               <li>
                 Approving BTP contract to transfer {tokenToTransfer} token.{" "}
                 {methodCallTxResult === null ? `In Progress..` : `Done`}
-                {methodCallTxResult == null ? (
-                  <></>
-                ) : methodCallTxResult.failure == null ? (
-                  <li>Tx Hash: {methodCallTxResult.txHash}</li>
-                ) : (
-                  <li>
-                    Error response from chain:{" "}
-                    {JSON.stringify({
-                      code: methodCallTxResult.failure.code,
-                      message: methodCallTxResult.failure.message,
-                      txHash: methodCallTxResult.txHash,
-                    })}
-                  </li>
-                )}
               </li>
+              {methodCallTxResult == null ? (
+                <></>
+              ) : methodCallTxResult.failure == null ? (
+                <li>Tx Hash: {methodCallTxResult.txHash}</li>
+              ) : (
+                <li>
+                  Error response from chain:{" "}
+                  {JSON.stringify({
+                    code: methodCallTxResult.failure.code,
+                    message: methodCallTxResult.failure.message,
+                    txHash: methodCallTxResult.txHash,
+                  })}
+                </li>
+              )}
               <li>
                 Transfering {tokenToTransfer} from {from} to {to} chain.{" "}
                 {transferTxResult === null ? `Pending..` : `Done`}
