@@ -312,9 +312,11 @@ async function getTxResult(
       // fetch tx from blockchain
       console.log(`round ${i}`);
       const txResult = await sdk.getTxResult(hash);
+      console.log("sdk tx result");
+      console.log(txResult);
 
-      if (txResult.error == null && txResult != null) {
-        return txResult.result;
+      if (txResult.error == null) {
+        return txResult;
       } else {
         await sleep();
       }

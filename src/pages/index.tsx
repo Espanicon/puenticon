@@ -324,19 +324,8 @@ function Home() {
         message: payload.message,
       };
     }
-    // eslint-disable-next-line
-    if (payload != null && payload.result != null) {
-      // eslint-disable-next-line
-      const t = await lib.getTxResult(payload.result, useMainnet);
-      // eslint-disable-next-line
-      if (t != null) {
-        txResult = {
-          ...txResult,
-          ...t,
-        };
-      }
-    }
 
+    // handle error response from wallet
     // eslint-disable-next-line
     if (payload.code != null && payload.message != null) {
       txResult = {
@@ -348,6 +337,22 @@ function Home() {
           message: payload.message,
         },
       };
+    }
+
+    // fetch tx status on chain
+    // eslint-disable-next-line
+    if (payload != null && payload.result != null) {
+      // eslint-disable-next-line
+      const t = await lib.getTxResult(payload.result, useMainnet);
+      console.log("tx result");
+      console.log(t);
+      // eslint-disable-next-line
+      if (t != null) {
+        txResult = {
+          ...txResult,
+          ...t,
+        };
+      }
     }
 
     // switch case for every type of event raised
@@ -396,17 +401,27 @@ function Home() {
       txFlag.current === "methodCall" &&
       targetAddress != null
     ) {
-      txFlag.current = "transfer";
-      void helpers.dispatchSecondTx(
-        tokenToTransfer,
-        fromIcon,
-        useMainnet,
-        amountToTransfer,
-        targetAddress,
-        loginWallets,
-        sdkTestnet,
-        sdkMainnet
-      );
+      if (methodCallTxResult.failure == null) {
+        txFlag.current = "transfer";
+        void helpers.dispatchSecondTx(
+          tokenToTransfer,
+          fromIcon,
+          useMainnet,
+          amountToTransfer,
+          targetAddress,
+          loginWallets,
+          sdkTestnet,
+          sdkMainnet
+        );
+      } else {
+        setTransferTxResult({
+          txHash: "",
+          failure: {
+            code: "0",
+            message: "Previous transaction failed",
+          },
+        });
+      }
     }
   }, [
     methodCallTxResult,
