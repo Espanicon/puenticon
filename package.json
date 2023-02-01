@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@espanicon/espanicon-sdk": "github:Espanicon/espanicon-sdk",
-    "@espanicon/icon-bridge-sdk-js": "file:../../../icon-bridge-sdk-js/icon-bridge-sdk-js",
+    "@espanicon/icon-bridge-sdk-js": "github:Espanicon/icon-bridge-sdk-js",
     "@tailwindcss/forms": "^0.5.3",
     "next": "13.1.2",
     "react": "18.2.0",
